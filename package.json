@@ -1,0 +1,22 @@
+{
+  "name": "niro-mcp-servers",
+  "version": "0.1.0",
+  "private": true,
+  "description": "業務効率化のための MCP (Model Context Protocol) サーバー群",
+  "workspaces": [
+    "packages/*",
+    "packages/shared/*"
+  ],
+  "scripts": {
+    "build": "bun run --filter '*' build",
+    "test": "bun test",
+    "clean": "bun run --filter '*' clean"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  }
+}

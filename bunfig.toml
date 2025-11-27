@@ -1,0 +1,12 @@
+# Bun configuration for monorepo
+
+[install]
+# Enable workspace support
+peer = true
+# Hoist dependencies to root node_modules
+auto = "auto"
+
+[test]
+# Test configuration
+preload = []
+coverage = true
