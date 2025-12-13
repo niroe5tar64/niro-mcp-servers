@@ -31,6 +31,19 @@ services:
     extends:
       file: docker-compose.yml
       service: confluence-md
+    # Override command for development mode with hot reload
+    command: bun run dev
+    # Enable HTTP transport for easier testing from DevContainer
+    environment:
+      - NODE_ENV=development
+      - TRANSPORT_MODE=http
+      - PORT=3001
+      - HOST=0.0.0.0
+    # Expose port for HTTP access
+    ports:
+      - "3001:3001"
+    # Disable read-only for development
+    read_only: false
     networks:
       - niro-mcp-network
     profiles:

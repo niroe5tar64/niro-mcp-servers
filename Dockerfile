@@ -5,7 +5,9 @@ WORKDIR /app
 # Install dependencies
 FROM base AS install
 COPY package.json bun.lockb* ./
-COPY packages/*/package.json ./packages/
+# Copy all package.json files maintaining directory structure
+COPY packages/confluence-md/package.json ./packages/confluence-md/
+COPY packages/shared/package.json ./packages/shared/
 RUN bun install --frozen-lockfile
 
 # Build
