@@ -16,7 +16,11 @@ RUN apt-get update && apt-get install -y \
     iputils-ping \
     sudo \
     ca-certificates \
+    npm \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Claude Code globally
+RUN npm install -g @anthropic-ai/claude-code
 
 # Set up sudo for bun user (useful for installing additional tools)
 RUN echo "bun ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/bun \
