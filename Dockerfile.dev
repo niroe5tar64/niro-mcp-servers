@@ -11,10 +11,11 @@ RUN apt-get update && apt-get install -y \
     procps \
     sudo \
     ca-certificates \
+    npm \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Claude Code globally
-RUN bun install -g @anthropic-ai/claude-code
+RUN npm install -g @anthropic-ai/claude-code
 
 # Set up sudo for bun user (useful for installing additional tools)
 RUN echo "bun ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/bun \
