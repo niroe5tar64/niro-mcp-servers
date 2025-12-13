@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # Dev Container for development with Claude Code
+  devcontainer:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: niro-mcp-devcontainer
+    working_dir: /workspace
+    command: sleep infinity
+    volumes:
+      # Mount source code
+      - .:/workspace:cached
+      # Persist Bun cache for faster installs
+      - bun-cache:/home/bun/.bun
+      # Persist git configuration
+      - bun-config:/home/bun/.config
+    environment:
+      - NODE_ENV=development
+      - TERM=xterm-256color
+    networks:
+      - niro-mcp-network
+    # Security settings optimized for Claude Code with Dangerous Skip mode
+    cap_add:
+      - SYS_PTRACE  # For debugging
+    security_opt:
+      - seccomp:unconfined  # Allow Claude Code unrestricted access within container
+      - apparmor:unconfined
+    # Keep container running for interactive development
+    stdin_open: true
+    tty: true
+    # Resource limits (optional, adjust as needed)
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+        reservations:
+          cpus: '2'
+          memory: 2G
+
+  # Confluence-MD MCP Server (can be started separately for testing)
+  confluence-md:
+    extends:
+      file: docker-compose.yml
+      service: confluence-md
+    networks:
+      - niro-mcp-network
+    profiles:
+      - mcp-servers
+
+networks:
+  niro-mcp-network:
+    driver: bridge
+
+volumes:
+  bun-cache:
+    driver: local
+  bun-config:
+    driver: local

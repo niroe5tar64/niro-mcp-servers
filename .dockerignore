@@ -1,13 +1,61 @@
+# Node modules and dependencies
 node_modules
-.git
-.gitignore
-README.md
-.env
-.env.*
+**/node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
 dist
 build
-coverage
-*.log
-.DS_Store
+*.tsbuildinfo
+.turbo
+
+# Development files
+.git
+.gitignore
 .vscode
 .idea
+*.swp
+*.swo
+*~
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage
+.nyc_output
+
+# Logs
+logs
+*.log
+
+# Temporary files
+tmp
+temp
+*.tmp
+
+# Docker files (for production builds - dev container needs these)
+docker-compose.yml
+.dockerignore
+
+# Documentation
+*.md
+docs
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Dev container specific (exclude from production builds)
+.devcontainer
+docker-compose.dev.yml
+Dockerfile.dev

@@ -1,7 +1,16 @@
 {
+  "sandbox": {
+    "enabled": false,
+    "allowUnsandboxedCommands": true
+  },
   "permissions": {
     "allow": [
-      "Bash(echo:*)"
+      "Bash",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep"
     ],
     "deny": [],
     "ask": []
