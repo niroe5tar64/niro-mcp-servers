@@ -22,24 +22,9 @@ services:
       - TERM=xterm-256color
     networks:
       - niro-mcp-network
-    # Security settings optimized for Claude Code with Dangerous Skip mode
-    cap_add:
-      - SYS_PTRACE  # For debugging
-    security_opt:
-      - seccomp:unconfined  # Allow Claude Code unrestricted access within container
-      - apparmor:unconfined
     # Keep container running for interactive development
     stdin_open: true
     tty: true
-    # Resource limits (optional, adjust as needed)
-    deploy:
-      resources:
-        limits:
-          cpus: '4'
-          memory: 4G
-        reservations:
-          cpus: '2'
-          memory: 2G
 
   # Confluence-MD MCP Server (can be started separately for testing)
   confluence-md:
