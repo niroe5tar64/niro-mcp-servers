@@ -7,7 +7,7 @@ FROM base AS install
 COPY package.json bun.lockb* ./
 # Copy all package.json files maintaining directory structure
 COPY packages/confluence-md/package.json ./packages/confluence-md/
-COPY packages/shared/package.json ./packages/shared/
+COPY packages/shared/confluence-cleaner/package.json ./packages/shared/confluence-cleaner/
 RUN bun install --frozen-lockfile
 
 # Build
