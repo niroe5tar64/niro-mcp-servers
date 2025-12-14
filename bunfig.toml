@@ -8,5 +8,4 @@ auto = "auto"
 
 [test]
 # Test configuration
-preload = []
 coverage = true
