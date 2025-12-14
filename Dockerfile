@@ -24,7 +24,7 @@ COPY package.json ./
 
 # Run as non-root user
 USER bun
-EXPOSE 3000
+EXPOSE 50301
 
 # Default command (override in docker-compose for specific servers)
 CMD ["bun", "run", "start"]

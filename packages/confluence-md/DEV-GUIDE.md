@@ -23,7 +23,7 @@ Confluence-MD MCP Serverは、ConfluenceのHTML形式のコンテンツをLLMに
 | 変数名 | 説明 | デフォルト値 | 例 |
 |--------|------|------------|-----|
 | `TRANSPORT_MODE` | 通信方式 (`stdio` または `http`) | `stdio` | `http` |
-| `PORT` | HTTPサーバーのポート（HTTPモード時） | `3001` | `3001` |
+| `PORT` | HTTPサーバーのポート（HTTPモード時） | `50301` | `50301` |
 | `HOST` | HTTPサーバーのホスト（HTTPモード時） | `0.0.0.0` | `0.0.0.0` |
 
 ## 開発環境のセットアップ
@@ -48,21 +48,21 @@ docker logs -f niro-mcp-confluence-md
 起動すると以下のように表示されます：
 
 ```
-Confluence-MD MCP Server running on http://0.0.0.0:3001
-Health check: http://0.0.0.0:3001/health
-MCP endpoint: http://0.0.0.0:3001/mcp
+Confluence-MD MCP Server running on http://0.0.0.0:50301
+Health check: http://0.0.0.0:50301/health
+MCP endpoint: http://0.0.0.0:50301/mcp
 ```
 
 ### 3. 動作確認
 
 #### Health Check
 ```bash
-curl http://confluence-md:3001/health
+curl http://confluence-md:50301/health
 ```
 
 #### Tools List（MCPプロトコル）
 ```bash
-curl -X POST http://confluence-md:3001/mcp \
+curl -X POST http://confluence-md:50301/mcp \
   -H "Content-Type: application/json" \
   -d '{
     "jsonrpc": "2.0",
@@ -75,7 +75,7 @@ curl -X POST http://confluence-md:3001/mcp \
 ```bash
 # DevContainer内から実行
 cd packages/confluence-md
-./test-http.sh confluence-md:3001
+./test-http.sh confluence-md:50301
 ```
 
 ## APIエンドポイント
@@ -104,7 +104,7 @@ MCPプロトコルのメッセージをJSON-RPC 2.0形式で送受信します�
 
 #### 例: ツール一覧取得
 ```bash
-curl -X POST http://confluence-md:3001/mcp \
+curl -X POST http://confluence-md:50301/mcp \
   -H "Content-Type: application/json" \
   -d '{
     "jsonrpc": "2.0",
@@ -115,7 +115,7 @@ curl -X POST http://confluence-md:3001/mcp \
 
 #### 例: Confluence HTMLをMarkdownに変換
 ```bash
-curl -X POST http://confluence-md:3001/mcp \
+curl -X POST http://confluence-md:50301/mcp \
   -H "Content-Type: application/json" \
   -d '{
     "jsonrpc": "2.0",
@@ -144,10 +144,10 @@ curl -X POST http://confluence-md:3001/mcp \
 ### 3. テスト
 ```bash
 # DevContainer内から
-./test-http.sh confluence-md:3001
+./test-http.sh confluence-md:50301
 
 # または手動でcurl
-curl -X POST http://confluence-md:3001/mcp \
+curl -X POST http://confluence-md:50301/mcp \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
 ```

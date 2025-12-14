@@ -37,11 +37,11 @@ services:
     environment:
       - NODE_ENV=development
       - TRANSPORT_MODE=http
-      - PORT=3001
+      - PORT=50301
       - HOST=0.0.0.0
     # Expose port for HTTP access
     ports:
-      - "3001:3001"
+      - "50301:50301"
     # Disable read-only for development
     read_only: false
     networks:

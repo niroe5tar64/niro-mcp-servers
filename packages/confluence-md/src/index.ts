@@ -134,7 +134,7 @@ async function startStdio() {
  * Start the server with HTTP transport
  */
 async function startHttp() {
-  const PORT = parseInt(process.env.PORT || "3001");
+  const PORT = parseInt(process.env.PORT || "50301");
   const HOST = process.env.HOST || "0.0.0.0";
 
   // Store active transports by session
