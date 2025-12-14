@@ -13,6 +13,7 @@
     "clean": "bun run --filter '*' clean"
   },
   "devDependencies": {
+    "@biomejs/biome": "latest",
     "@types/bun": "latest",
     "typescript": "^5.0.0"
   },
