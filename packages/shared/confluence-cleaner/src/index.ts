@@ -5,6 +5,7 @@
  * optimized for LLM consumption.
  */
 
+import * as cheerio from "cheerio";
 import TurndownService from "turndown";
 import { gfm } from "turndown-plugin-gfm";
 
@@ -26,6 +27,40 @@ export interface CleanerOptions {
 }
 
 /**
+ * TurndownServiceのシングルトンキャッシュ
+ * convertTablesオプションごとにインスタンスを保持
+ */
+const turndownServiceCache = new Map<boolean, TurndownService>();
+
+/**
+ * TurndownServiceインスタンスを取得（キャッシュ付き）
+ */
+function getTurndownService(convertTables: boolean): TurndownService {
+  const cached = turndownServiceCache.get(convertTables);
+  if (cached) {
+    return cached;
+  }
+
+  const service = new TurndownService({
+    headingStyle: "atx",
+    codeBlockStyle: "fenced",
+    bulletListMarker: "-",
+    emDelimiter: "*", // 斜体を*で表現
+  });
+
+  // GFM（GitHub Flavored Markdown）プラグインを追加（テーブル対応）
+  if (convertTables) {
+    service.use(gfm);
+  } else {
+    // テーブルをHTMLのまま保持するルールを追加
+    service.keep(["table", "thead", "tbody", "tr", "th", "td"]);
+  }
+
+  turndownServiceCache.set(convertTables, service);
+  return service;
+}
+
+/**
  * Clean Confluence HTML and convert to Markdown
  */
 export function cleanConfluenceHtml(
@@ -43,19 +78,6 @@ export function cleanConfluenceHtml(
     convertTables = true,
   } = options;
 
-  // TurndownServiceのインスタンスを作成
-  const turndownService = new TurndownService({
-    headingStyle: "atx",
-    codeBlockStyle: "fenced",
-    bulletListMarker: "-",
-    emDelimiter: "*", // 斜体を*で表現
-  });
-
-  // GFM（GitHub Flavored Markdown）プラグインを追加（テーブル対応）
-  if (convertTables) {
-    turndownService.use(gfm);
-  }
-
   // メタデータ除去が有効な場合は、不要な属性を削除
   if (removeMetadata) {
     html = removeConfluenceMetadata(html);
@@ -66,11 +88,8 @@ export function cleanConfluenceHtml(
     html = expandConfluenceMacros(html);
   }
 
-  // テーブル変換の設定
-  if (!convertTables) {
-    // テーブルをHTMLのまま保持するルールを追加
-    turndownService.keep(["table", "thead", "tbody", "tr", "th", "td"]);
-  }
+  // TurndownServiceのインスタンスを取得（キャッシュ付き）
+  const turndownService = getTurndownService(convertTables);
 
   // HTML → Markdown変換
   const markdown = turndownService.turndown(html);
@@ -80,14 +99,29 @@ export function cleanConfluenceHtml(
 
 /**
  * Confluenceメタデータ（class, style, data-*属性）を削除
+ * cheerioを使用してHTMLを安全にパース・操作
  */
 function removeConfluenceMetadata(html: string): string {
-  // class, style, data-* 属性を削除する正規表現
-  let cleaned = html.replace(/\s+class="[^"]*"/g, "");
-  cleaned = cleaned.replace(/\s+style="[^"]*"/g, "");
-  cleaned = cleaned.replace(/\s+data-[a-z-]+="[^"]*"/g, "");
+  const $ = cheerio.load(html, {
+    // XMLモードは無効（HTMLとして扱う）
+    xml: false,
+  });
 
-  return cleaned;
+  // すべての要素から class, style 属性を削除
+  $("*").removeAttr("class").removeAttr("style");
+
+  // すべての data-* 属性を削除
+  $("*").each((_, element) => {
+    if (element.type === "tag" && element.attribs) {
+      for (const attr in element.attribs) {
+        if (attr.startsWith("data-")) {
+          $(element).removeAttr(attr);
+        }
+      }
+    }
+  });
+
+  return $.html();
 }
 
 /**
