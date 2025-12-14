@@ -11,9 +11,9 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import {
+  type ConvertConfluenceToMarkdownArgs,
   confluenceConverterTool,
   handleConvertConfluenceToMarkdown,
-  type ConvertConfluenceToMarkdownArgs,
 } from "./tools/confluence-converter.js";
 
 /**
@@ -37,7 +37,7 @@ export function createMcpServer(): Server {
       capabilities: {
         tools: {},
       },
-    }
+    },
   );
 
   /**
@@ -61,7 +61,7 @@ export function createMcpServer(): Server {
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (request.params.name === "convert_confluence_to_markdown") {
       return handleConvertConfluenceToMarkdown(
-        request.params.arguments as ConvertConfluenceToMarkdownArgs
+        request.params.arguments as unknown as ConvertConfluenceToMarkdownArgs,
       );
     }
 

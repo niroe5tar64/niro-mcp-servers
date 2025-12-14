@@ -5,10 +5,10 @@
  * リモートクライアントからアクセス可能にし、セッション管理を行います。
  */
 
-import type { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { randomUUID } from "node:crypto";
 import { createServer } from "node:http";
+import type { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 
 /**
  * HTTP トランスポートでサーバーを起動
@@ -20,7 +20,7 @@ import { createServer } from "node:http";
 export async function startHttpTransport(
   server: Server,
   port: number,
-  host: string
+  host: string,
 ): Promise<void> {
   // セッションIDごとにトランスポートを保存
   // 各クライアントは独立したセッションを持ち、状態が分離されます
@@ -28,7 +28,12 @@ export async function startHttpTransport(
 
   // Node.js の http モジュールを使用してHTTPサーバーを作成
   const httpServer = createServer(async (req, res) => {
-    const url = new URL(req.url!, `http://${req.headers.host}`);
+    if (!req.url) {
+      res.writeHead(400);
+      res.end("Bad Request");
+      return;
+    }
+    const url = new URL(req.url, `http://${req.headers.host}`);
 
     // ヘルスチェックエンドポイント
     // サーバーが正常に動作しているか確認するために使用
@@ -43,7 +48,7 @@ export async function startHttpTransport(
     if (url.pathname === "/mcp") {
       try {
         // POSTリクエストのボディをパース
-        let parsedBody;
+        let parsedBody: unknown;
         if (req.method === "POST") {
           const chunks: Buffer[] = [];
           for await (const chunk of req) {
@@ -52,7 +57,7 @@ export async function startHttpTransport(
           const body = Buffer.concat(chunks).toString();
           try {
             parsedBody = JSON.parse(body);
-          } catch (error) {
+          } catch (_error) {
             res.writeHead(400, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ error: "Invalid JSON" }));
             return;
@@ -70,7 +75,9 @@ export async function startHttpTransport(
             onsessioninitialized: (id) => {
               console.error(`Session initialized: ${id}`);
               // トランスポートをセッションIDで保存
-              transports.set(id, transport!);
+              if (transport) {
+                transports.set(id, transport);
+              }
             },
             onsessionclosed: (id) => {
               console.error(`Session closed: ${id}`);

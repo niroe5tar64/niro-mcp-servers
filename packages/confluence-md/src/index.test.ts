@@ -1,5 +1,5 @@
-import { describe, test, expect, beforeAll, afterAll } from "bun:test";
-import { spawn, type ChildProcess } from "child_process";
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { type ChildProcess, spawn } from "node:child_process";
 
 /**
  * Confluence-MD MCP Server Integration Tests
@@ -20,14 +20,17 @@ describe("Confluence-MD MCP Server Integration Tests", () => {
   /**
    * サーバー起動を待つヘルパー関数
    */
-  async function waitForServer(maxRetries = 30, retryDelay = 100): Promise<boolean> {
+  async function waitForServer(
+    maxRetries = 30,
+    retryDelay = 100,
+  ): Promise<boolean> {
     for (let i = 0; i < maxRetries; i++) {
       try {
         const response = await fetch(`${BASE_URL}/health`);
         if (response.ok) {
           return true;
         }
-      } catch (error) {
+      } catch (_error) {
         // サーバーがまだ起動していない
       }
       await new Promise((resolve) => setTimeout(resolve, retryDelay));
@@ -78,24 +81,32 @@ describe("Confluence-MD MCP Server Integration Tests", () => {
   /**
    * SSE形式のレスポンスをパースするヘルパー関数
    */
-  async function parseSseResponse(response: Response): Promise<any> {
+  async function parseSseResponse(
+    response: Response,
+  ): Promise<Record<string, unknown>> {
     expect(response.status).toBe(200);
     const text = await response.text();
     const dataMatch = text.match(/data: ({.*})/);
     expect(dataMatch).toBeDefined();
-    return JSON.parse(dataMatch![1]);
+    const data = dataMatch?.[1];
+    if (!data) throw new Error("Invalid SSE format");
+    return JSON.parse(data);
   }
 
   /**
    * MCPリクエストを送信するヘルパー関数
    */
-  async function sendMcpRequest(method: string, params: any, id: number): Promise<any> {
+  async function sendMcpRequest(
+    method: string,
+    params: Record<string, unknown>,
+    id: number,
+  ): Promise<Record<string, unknown>> {
     const response = await fetch(`${BASE_URL}/mcp`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json, text/event-stream",
-        "mcp-session-id": sessionId!,
+        "mcp-session-id": sessionId || "",
       },
       body: JSON.stringify({
         jsonrpc: "2.0",
@@ -153,7 +164,9 @@ describe("Confluence-MD MCP Server Integration Tests", () => {
       const response = await fetch(`${BASE_URL}/health`);
 
       expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")).toContain("application/json");
+      expect(response.headers.get("content-type")).toContain(
+        "application/json",
+      );
 
       const data = await response.json();
       expect(data).toEqual({
@@ -170,72 +183,113 @@ describe("Confluence-MD MCP Server Integration Tests", () => {
       expect(data.jsonrpc).toBe("2.0");
       expect(data.id).toBe(1);
       expect(data.result).toBeDefined();
-      expect(data.result.tools).toBeArray();
-      expect(data.result.tools).toHaveLength(1);
+      const typedData = data as {
+        result?: { tools?: Array<Record<string, unknown>> };
+      };
+      expect(typedData.result?.tools).toBeArray();
+      expect(typedData.result?.tools).toHaveLength(1);
 
-      const tool = data.result.tools[0];
-      expect(tool.name).toBe("convert_confluence_to_markdown");
-      expect(tool.description).toContain("Confluence HTML");
-      expect(tool.inputSchema).toBeDefined();
-      expect(tool.inputSchema.properties.html).toBeDefined();
+      const tool = typedData.result?.tools?.[0];
+      expect(tool).toBeDefined();
+      expect((tool as Record<string, unknown>)?.name).toBe(
+        "convert_confluence_to_markdown",
+      );
+      expect((tool as Record<string, unknown>)?.description).toContain(
+        "Confluence HTML",
+      );
+      expect((tool as Record<string, unknown>)?.inputSchema).toBeDefined();
+      expect(
+        (
+          (tool as Record<string, unknown>)?.inputSchema as Record<
+            string,
+            unknown
+          >
+        )?.properties,
+      ).toBeDefined();
     });
 
     test("convert_confluence_to_markdown ツールを実行できる", async () => {
-      const data = await sendMcpRequest("tools/call", {
-        name: "convert_confluence_to_markdown",
-        arguments: {
-          html: '<div class="confluence-content"><p>Hello World</p></div>',
-          removeMetadata: true,
-          expandMacros: true,
-          convertTables: true,
+      const data = await sendMcpRequest(
+        "tools/call",
+        {
+          name: "convert_confluence_to_markdown",
+          arguments: {
+            html: '<div class="confluence-content"><p>Hello World</p></div>',
+            removeMetadata: true,
+            expandMacros: true,
+            convertTables: true,
+          },
         },
-      }, 2);
+        2,
+      );
 
       expect(data.jsonrpc).toBe("2.0");
       expect(data.id).toBe(2);
       expect(data.result).toBeDefined();
-      expect(data.result.content).toBeArray();
-      expect(data.result.content.length).toBeGreaterThan(0);
+      const typedData = data as {
+        result?: { content?: Array<Record<string, unknown>> };
+      };
+      expect(typedData.result?.content).toBeArray();
+      expect(typedData.result?.content?.length).toBeGreaterThan(0);
 
       // 変換結果が返される
-      const mainContent = data.result.content[0];
-      expect(mainContent.type).toBe("text");
-      expect(mainContent.text).toBeDefined();
+      const mainContent = typedData.result?.content?.[0];
+      expect(mainContent).toBeDefined();
+      expect((mainContent as Record<string, unknown>)?.type).toBe("text");
+      expect((mainContent as Record<string, unknown>)?.text).toBeDefined();
 
       // トークン削減情報が含まれているか確認
-      const hasTokenReduction = data.result.content.some(
-        (item: any) => item.text && item.text.includes("Token reduction:")
+      const hasTokenReduction = typedData.result?.content?.some(
+        (item: Record<string, unknown>) =>
+          typeof item.text === "string" &&
+          item.text.includes("Token reduction:"),
       );
       expect(hasTokenReduction).toBe(true);
     });
 
     test("必須パラメータ html なしでエラーになる", async () => {
-      const data = await sendMcpRequest("tools/call", {
-        name: "convert_confluence_to_markdown",
-        arguments: {
-          // html パラメータなし
-          removeMetadata: true,
+      const data = await sendMcpRequest(
+        "tools/call",
+        {
+          name: "convert_confluence_to_markdown",
+          arguments: {
+            // html パラメータなし
+            removeMetadata: true,
+          },
         },
-      }, 3);
+        3,
+      );
 
       // MCPプロトコルではエラーもJSONRPCレスポンスとして返される
       expect(data.jsonrpc).toBe("2.0");
       expect(data.id).toBe(3);
       // エラーの内容を確認（実装によってerrorまたはresult.isErrorが設定される）
-      const hasError = data.error || data.result?.isError;
+      const typedData = data as {
+        error?: unknown;
+        result?: { isError?: unknown };
+      };
+      const hasError = typedData.error || typedData.result?.isError;
       expect(hasError).toBeTruthy();
     });
 
     test("未知のツール名でエラーになる", async () => {
-      const data = await sendMcpRequest("tools/call", {
-        name: "unknown_tool",
-        arguments: {},
-      }, 4);
+      const data = await sendMcpRequest(
+        "tools/call",
+        {
+          name: "unknown_tool",
+          arguments: {},
+        },
+        4,
+      );
 
       expect(data.jsonrpc).toBe("2.0");
       expect(data.id).toBe(4);
       // エラーレスポンスが返される
-      const hasError = data.error || data.result?.isError;
+      const typedData = data as {
+        error?: unknown;
+        result?: { isError?: unknown };
+      };
+      const hasError = typedData.error || typedData.result?.isError;
       expect(hasError).toBeTruthy();
     });
 

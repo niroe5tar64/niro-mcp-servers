@@ -4,17 +4,19 @@
  * ツールロジックの単体テスト。サーバー起動不要で高速に実行できます。
  */
 
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import {
+  type ConvertConfluenceToMarkdownArgs,
   confluenceConverterTool,
   handleConvertConfluenceToMarkdown,
-  type ConvertConfluenceToMarkdownArgs,
 } from "./confluence-converter.js";
 
 describe("Confluence Converter Tool", () => {
   describe("ツール定義", () => {
     test("正しいツール名を持つ", () => {
-      expect(confluenceConverterTool.name).toBe("convert_confluence_to_markdown");
+      expect(confluenceConverterTool.name).toBe(
+        "convert_confluence_to_markdown",
+      );
     });
 
     test("説明文が定義されている", () => {
@@ -87,8 +89,8 @@ describe("Confluence Converter Tool", () => {
         expect(result.content.length).toBeGreaterThanOrEqual(2);
 
         // トークン削減情報を含むコンテンツがある
-        const hasTokenReduction = result.content.some(
-          (item) => item.text && item.text.includes("Token reduction:")
+        const hasTokenReduction = result.content.some((item) =>
+          item.text?.includes("Token reduction:"),
         );
         expect(hasTokenReduction).toBe(true);
       });
@@ -225,7 +227,7 @@ describe("Confluence Converter Tool", () => {
       });
 
       test("非常に長いHTMLを処理できる", async () => {
-        const longHtml = "<p>" + "x".repeat(10000) + "</p>";
+        const longHtml = `<p>${"x".repeat(10000)}</p>`;
         const args: ConvertConfluenceToMarkdownArgs = {
           html: longHtml,
         };

@@ -4,8 +4,11 @@
  * このファイルは、Confluence HTMLをMarkdownに変換するMCPツールの定義と実装を含みます。
  */
 
-import { cleanConfluenceHtml, calculateTokenReduction } from "@niro-mcp/confluence-cleaner";
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
+import {
+  calculateTokenReduction,
+  cleanConfluenceHtml,
+} from "@niro-mcp/confluence-cleaner";
 
 /**
  * ツール定義
@@ -59,8 +62,15 @@ export interface ConvertConfluenceToMarkdownArgs {
  * @param args - ツールの引数
  * @returns 変換されたMarkdownとトークン削減率
  */
-export async function handleConvertConfluenceToMarkdown(args: ConvertConfluenceToMarkdownArgs) {
-  const { html, removeMetadata = true, expandMacros = true, convertTables = true } = args;
+export async function handleConvertConfluenceToMarkdown(
+  args: ConvertConfluenceToMarkdownArgs,
+) {
+  const {
+    html,
+    removeMetadata = true,
+    expandMacros = true,
+    convertTables = true,
+  } = args;
 
   try {
     // Confluence HTMLをクリーンなMarkdownに変換

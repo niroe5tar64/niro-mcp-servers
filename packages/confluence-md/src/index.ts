@@ -11,8 +11,8 @@
  */
 
 import { createMcpServer } from "./server.js";
-import { startStdioTransport } from "./transports/stdio.js";
 import { startHttpTransport } from "./transports/http.js";
+import { startStdioTransport } from "./transports/stdio.js";
 
 /**
  * メインエントリーポイント
@@ -30,7 +30,7 @@ async function main() {
 
   if (transportMode === "http") {
     // HTTPモード: リモートクライアントからアクセス可能
-    const port = parseInt(process.env.PORT || "50301");
+    const port = parseInt(process.env.PORT || "50301", 10);
     const host = process.env.HOST || "0.0.0.0";
     await startHttpTransport(server, port, host);
   } else {

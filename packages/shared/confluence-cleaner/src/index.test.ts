@@ -1,5 +1,9 @@
-import { describe, test, expect } from "bun:test";
-import { calculateTokenReduction, cleanConfluenceHtml, expandMacro } from "./index";
+import { describe, expect, test } from "bun:test";
+import {
+  calculateTokenReduction,
+  cleanConfluenceHtml,
+  expandMacro,
+} from "./index";
 
 describe("calculateTokenReduction", () => {
   test("正常な削減率を計算できる", () => {
@@ -43,7 +47,8 @@ describe("calculateTokenReduction", () => {
   });
 
   test("実際のHTMLとMarkdownで削減率を計算", () => {
-    const html = '<div class="confluence-content"><p style="color: red;">Hello World</p></div>'; // 76文字 = 19トークン
+    const html =
+      '<div class="confluence-content"><p style="color: red;">Hello World</p></div>'; // 76文字 = 19トークン
     const markdown = "Hello World"; // 11文字 = 3トークン
     const reduction = calculateTokenReduction(html, markdown);
 
@@ -56,7 +61,7 @@ describe("calculateTokenReduction", () => {
 describe("cleanConfluenceHtml", () => {
   describe("基本的なHTML変換", () => {
     test("シンプルな段落をMarkdownに変換", () => {
-      const html = '<p>Hello World</p>';
+      const html = "<p>Hello World</p>";
       const result = cleanConfluenceHtml(html);
 
       // TODO実装後は以下のテストが通るようにする
@@ -65,7 +70,7 @@ describe("cleanConfluenceHtml", () => {
     });
 
     test("見出しをMarkdownに変換", () => {
-      const html = '<h1>Title</h1><h2>Subtitle</h2><h3>Section</h3>';
+      const html = "<h1>Title</h1><h2>Subtitle</h2><h3>Section</h3>";
       const result = cleanConfluenceHtml(html);
 
       // TODO実装後
@@ -76,7 +81,7 @@ describe("cleanConfluenceHtml", () => {
     });
 
     test("リストをMarkdownに変換", () => {
-      const html = '<ul><li>Item 1</li><li>Item 2</li></ul>';
+      const html = "<ul><li>Item 1</li><li>Item 2</li></ul>";
       const result = cleanConfluenceHtml(html);
 
       // TODO実装後
@@ -86,7 +91,7 @@ describe("cleanConfluenceHtml", () => {
     });
 
     test("強調とボールドをMarkdownに変換", () => {
-      const html = '<p>This is <strong>bold</strong> and <em>italic</em></p>';
+      const html = "<p>This is <strong>bold</strong> and <em>italic</em></p>";
       const result = cleanConfluenceHtml(html);
 
       // TODO実装後
@@ -107,7 +112,8 @@ describe("cleanConfluenceHtml", () => {
 
   describe("Confluence特有のメタデータ除去", () => {
     test("classとstyle属性を削除", () => {
-      const html = '<div class="confluence-content" style="color: red;"><p class="paragraph" style="margin: 10px;">Test</p></div>';
+      const html =
+        '<div class="confluence-content" style="color: red;"><p class="paragraph" style="margin: 10px;">Test</p></div>';
       const result = cleanConfluenceHtml(html, { removeMetadata: true });
 
       // TODO実装後
@@ -118,7 +124,8 @@ describe("cleanConfluenceHtml", () => {
     });
 
     test("data-*属性を削除", () => {
-      const html = '<div data-confluence-id="12345" data-macro-name="info"><p>Test</p></div>';
+      const html =
+        '<div data-confluence-id="12345" data-macro-name="info"><p>Test</p></div>';
       const result = cleanConfluenceHtml(html, { removeMetadata: true });
 
       // TODO実装後
@@ -159,7 +166,7 @@ describe("cleanConfluenceHtml", () => {
     });
 
     test("convertTables: false の場合はHTMLテーブルを保持", () => {
-      const html = '<table><tr><td>Test</td></tr></table>';
+      const html = "<table><tr><td>Test</td></tr></table>";
       const result = cleanConfluenceHtml(html, { convertTables: false });
 
       // TODO実装後

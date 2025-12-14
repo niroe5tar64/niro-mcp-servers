@@ -25,7 +25,10 @@ export interface CleanerOptions {
 /**
  * Clean Confluence HTML and convert to Markdown
  */
-export function cleanConfluenceHtml(html: string, options: CleanerOptions = {}): string {
+export function cleanConfluenceHtml(
+  html: string,
+  _options: CleanerOptions = {},
+): string {
   // TODO: Implement HTML cleaning logic
   // This is a placeholder for the actual implementation
   return html;
@@ -34,7 +37,7 @@ export function cleanConfluenceHtml(html: string, options: CleanerOptions = {}):
 /**
  * Expand Confluence macro to readable format
  */
-export function expandMacro(macroType: string, content: string): string {
+export function expandMacro(_macroType: string, content: string): string {
   // TODO: Implement macro expansion
   return content;
 }
@@ -42,7 +45,10 @@ export function expandMacro(macroType: string, content: string): string {
 /**
  * Calculate token reduction percentage
  */
-export function calculateTokenReduction(original: string, cleaned: string): number {
+export function calculateTokenReduction(
+  original: string,
+  cleaned: string,
+): number {
   const originalTokens = estimateTokens(original);
   const cleanedTokens = estimateTokens(cleaned);
   return ((originalTokens - cleanedTokens) / originalTokens) * 100;
