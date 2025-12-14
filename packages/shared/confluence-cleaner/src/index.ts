@@ -78,23 +78,29 @@ export function cleanConfluenceHtml(
     convertTables = true,
   } = options;
 
-  // メタデータ除去が有効な場合は、不要な属性を削除
-  if (removeMetadata) {
-    html = removeConfluenceMetadata(html);
+  try {
+    // メタデータ除去が有効な場合は、不要な属性を削除
+    if (removeMetadata) {
+      html = removeConfluenceMetadata(html);
+    }
+
+    // Confluenceマクロの展開
+    if (expandMacros) {
+      html = expandConfluenceMacros(html);
+    }
+
+    // TurndownServiceのインスタンスを取得（キャッシュ付き）
+    const turndownService = getTurndownService(convertTables);
+
+    // HTML → Markdown変換
+    const markdown = turndownService.turndown(html);
+
+    return markdown;
+  } catch (error) {
+    // エラーが発生した場合は、元のHTMLを返す
+    console.error("HTML to Markdown conversion failed:", error);
+    return html;
   }
-
-  // Confluenceマクロの展開
-  if (expandMacros) {
-    html = expandConfluenceMacros(html);
-  }
-
-  // TurndownServiceのインスタンスを取得（キャッシュ付き）
-  const turndownService = getTurndownService(convertTables);
-
-  // HTML → Markdown変換
-  const markdown = turndownService.turndown(html);
-
-  return markdown;
 }
 
 /**
@@ -102,75 +108,141 @@ export function cleanConfluenceHtml(
  * cheerioを使用してHTMLを安全にパース・操作
  */
 function removeConfluenceMetadata(html: string): string {
-  const $ = cheerio.load(html, {
-    // XMLモードは無効（HTMLとして扱う）
-    xml: false,
-  });
+  try {
+    const $ = cheerio.load(html, {
+      // XMLモードは無効（HTMLとして扱う）
+      xml: false,
+    });
 
-  // すべての要素から class, style 属性を削除
-  $("*").removeAttr("class").removeAttr("style");
+    // すべての要素から class, style 属性を削除
+    $("*").removeAttr("class").removeAttr("style");
 
-  // すべての data-* 属性を削除
-  $("*").each((_, element) => {
-    if (element.type === "tag" && element.attribs) {
-      for (const attr in element.attribs) {
-        if (attr.startsWith("data-")) {
-          $(element).removeAttr(attr);
+    // すべての data-* 属性を削除
+    $("*").each((_, element) => {
+      if (element.type === "tag" && element.attribs) {
+        for (const attr in element.attribs) {
+          if (attr.startsWith("data-")) {
+            $(element).removeAttr(attr);
+          }
         }
       }
-    }
-  });
+    });
 
-  return $.html();
+    return $.html();
+  } catch (error) {
+    // パースエラーが発生した場合は、元のHTMLを返す
+    console.warn("Failed to parse HTML with cheerio:", error);
+    return html;
+  }
 }
 
 /**
  * Confluence マクロを認識して展開
  */
 function expandConfluenceMacros(html: string): string {
-  // Confluenceマクロパターンを認識
-  // 例: <ac:structured-macro ac:name="info">...<ac:rich-text-body>content</ac:rich-text-body>...</ac:structured-macro>
+  try {
+    let result = html;
 
-  // シンプルな実装: div要素のdata-macro-name属性からマクロタイプを認識
-  const macroPattern =
-    /<div[^>]*data-macro-name="([^"]+)"[^>]*>([\s\S]*?)<\/div>/gi;
+    // パターン1: Confluence標準の<ac:structured-macro>形式
+    // 例: <ac:structured-macro ac:name="info"><ac:rich-text-body>content</ac:rich-text-body></ac:structured-macro>
+    const acMacroPattern =
+      /<ac:structured-macro[^>]*ac:name="([^"]+)"[^>]*>([\s\S]*?)<\/ac:structured-macro>/gi;
 
-  const expanded = html.replace(macroPattern, (_match, macroType, content) => {
-    // divタグを除去してコンテンツのみを取得
-    const cleanContent = content.replace(/<\/?div[^>]*>/g, "");
-    return expandMacro(macroType, cleanContent);
-  });
+    result = result.replace(acMacroPattern, (_match, macroType, content) => {
+      // 言語パラメータを抽出（codeマクロ用）
+      const languageMatch = content.match(
+        /<ac:parameter[^>]*ac:name="language"[^>]*>([^<]+)<\/ac:parameter>/i,
+      );
+      const language = languageMatch ? languageMatch[1].trim() : undefined;
 
-  return expanded;
+      // ac:rich-text-bodyまたはac:plain-text-bodyからコンテンツを抽出
+      const richTextMatch = content.match(
+        /<ac:rich-text-body>([\s\S]*?)<\/ac:rich-text-body>/i,
+      );
+      const plainTextMatch = content.match(
+        /<ac:plain-text-body><!\[CDATA\[([\s\S]*?)\]\]><\/ac:plain-text-body>/i,
+      );
+
+      let cleanContent = "";
+      if (richTextMatch) {
+        cleanContent = richTextMatch[1].trim();
+      } else if (plainTextMatch) {
+        cleanContent = plainTextMatch[1].trim();
+      } else {
+        // bodyタグがない場合は、パラメータタグを除去して使用
+        cleanContent = content
+          .replace(/<ac:parameter[^>]*>[\s\S]*?<\/ac:parameter>/gi, "")
+          .replace(/<\/?[^>]+(>|$)/g, "")
+          .trim();
+      }
+
+      return expandMacro(macroType, cleanContent, language);
+    });
+
+    // パターン2: div要素のdata-macro-name属性（HTML出力形式）
+    const divMacroPattern =
+      /<div[^>]*data-macro-name="([^"]+)"[^>]*>([\s\S]*?)<\/div>/gi;
+
+    result = result.replace(divMacroPattern, (_match, macroType, content) => {
+      // divタグを除去してコンテンツのみを取得
+      const cleanContent = content.replace(/<\/?div[^>]*>/g, "").trim();
+      return expandMacro(macroType, cleanContent);
+    });
+
+    return result;
+  } catch (error) {
+    console.warn("Failed to expand Confluence macros:", error);
+    return html;
+  }
 }
 
 /**
- * Expand Confluence macro to readable format
+ * Expand Confluence macro to readable format (HTML形式で返す)
+ * Turndownが後で適切にMarkdownに変換する
  */
-export function expandMacro(macroType: string, content: string): string {
+export function expandMacro(
+  macroType: string,
+  content: string,
+  language?: string,
+): string {
   const trimmedContent = content.trim();
 
   switch (macroType.toLowerCase()) {
     case "info":
-      return `ℹ️ **INFO**\n\n${trimmedContent}`;
+      return `<div><strong>ℹ️ INFO</strong><br><br>${trimmedContent}</div>`;
 
     case "warning":
-      return `⚠️ **WARNING**\n\n${trimmedContent}`;
+      return `<div><strong>⚠️ WARNING</strong><br><br>${trimmedContent}</div>`;
 
     case "note":
-      return `📝 **NOTE**\n\n${trimmedContent}`;
+      return `<div><strong>📝 NOTE</strong><br><br>${trimmedContent}</div>`;
 
     case "tip":
-      return `💡 **TIP**\n\n${trimmedContent}`;
+      return `<div><strong>💡 TIP</strong><br><br>${trimmedContent}</div>`;
 
     case "code":
-      // コードマクロはコードブロックとして展開
-      return `\`\`\`\n${trimmedContent}\n\`\`\``;
+      // コードマクロはHTML codeブロックとして展開（言語指定付き）
+      if (language) {
+        return `<pre><code class="language-${language}">${escapeHtml(trimmedContent)}</code></pre>`;
+      }
+      return `<pre><code>${escapeHtml(trimmedContent)}</code></pre>`;
 
     default:
       // 未知のマクロタイプはそのまま返す
       return trimmedContent;
   }
+}
+
+/**
+ * HTMLエスケープ
+ */
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 /**

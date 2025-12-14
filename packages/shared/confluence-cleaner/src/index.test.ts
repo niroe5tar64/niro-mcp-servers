@@ -202,6 +202,7 @@ describe("expandMacro", () => {
     const result = expandMacro("info", content);
 
     expect(result).toContain("ℹ️");
+    expect(result).toContain("INFO");
     expect(result).toContain(content);
   });
 
@@ -210,6 +211,7 @@ describe("expandMacro", () => {
     const result = expandMacro("warning", content);
 
     expect(result).toContain("⚠️");
+    expect(result).toContain("WARNING");
     expect(result).toContain(content);
   });
 
@@ -218,6 +220,7 @@ describe("expandMacro", () => {
     const result = expandMacro("note", content);
 
     expect(result).toContain("📝");
+    expect(result).toContain("NOTE");
     expect(result).toContain(content);
   });
 
@@ -226,6 +229,7 @@ describe("expandMacro", () => {
     const result = expandMacro("tip", content);
 
     expect(result).toContain("💡");
+    expect(result).toContain("TIP");
     expect(result).toContain(content);
   });
 
@@ -233,8 +237,9 @@ describe("expandMacro", () => {
     const content = "console.log('Hello')";
     const result = expandMacro("code", content);
 
-    expect(result).toContain("```");
-    expect(result).toContain(content);
+    // HTML形式で返される
+    expect(result).toContain("<pre><code>");
+    expect(result).toContain("</code></pre>");
   });
 
   test("未知のマクロタイプは元のコンテンツを返す", () => {
@@ -247,7 +252,59 @@ describe("expandMacro", () => {
   test("空のコンテンツを処理", () => {
     const result = expandMacro("info", "");
 
-    // 空文字列またはマクロのプレフィックスのみ返す
+    // 空文字列でもHTML要素が返される
     expect(result).toBeDefined();
+    expect(result).toContain("INFO");
+  });
+
+  test("言語指定付きコードマクロを展開", () => {
+    const content = "console.log('Hello')";
+    const result = expandMacro("code", content, "javascript");
+
+    // HTML形式で言語指定を含む
+    expect(result).toContain('<code class="language-javascript">');
+    expect(result).toContain("console.log");
+  });
+});
+
+describe("エラーハンドリング", () => {
+  test("不正なHTMLでもエラーにならずフォールバックする", () => {
+    const invalidHtml = "<div><p>unclosed tag";
+    const result = cleanConfluenceHtml(invalidHtml);
+
+    // エラーにならず何かしらの結果が返る
+    expect(result).toBeDefined();
+    expect(typeof result).toBe("string");
+  });
+
+  test("極端に大きなHTMLも処理できる", () => {
+    const largeHtml = `<p>${"a".repeat(100000)}</p>`;
+    const result = cleanConfluenceHtml(largeHtml);
+
+    expect(result).toBeDefined();
+    expect(typeof result).toBe("string");
+  });
+});
+
+describe("Confluence標準マクロ形式", () => {
+  test("<ac:structured-macro>形式のinfoマクロを展開", () => {
+    const html =
+      '<ac:structured-macro ac:name="info"><ac:rich-text-body>Important information</ac:rich-text-body></ac:structured-macro>';
+    const result = cleanConfluenceHtml(html, { removeMetadata: false });
+
+    expect(result).toContain("ℹ️");
+    expect(result).toContain("INFO");
+    expect(result).toContain("Important information");
+  });
+
+  test("<ac:structured-macro>形式のcodeマクロを言語指定付きで展開", () => {
+    const html = `<ac:structured-macro ac:name="code">
+      <ac:parameter ac:name="language">javascript</ac:parameter>
+      <ac:plain-text-body><![CDATA[console.log('test');]]></ac:plain-text-body>
+    </ac:structured-macro>`;
+    const result = cleanConfluenceHtml(html, { removeMetadata: false });
+
+    expect(result).toContain("```javascript");
+    expect(result).toContain("console.log('test');");
   });
 });
