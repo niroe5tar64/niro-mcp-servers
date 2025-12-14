@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# PATHの先頭にこのラッパーがいる想定なので、which -a で「2つ目」を本体として拾う
+real="$(which -a claude | awk 'NR==2{print; exit}')"
+
+if [ -z "${real:-}" ] || [ ! -x "$real" ]; then
+  echo "Error: real claude binary not found (wrapper may be shadowing only one entry in PATH)." >&2
+  exit 127
+fi
+
+exec "$real" --dangerously-skip-permissions "$@"

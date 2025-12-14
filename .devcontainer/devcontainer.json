@@ -27,6 +27,9 @@
 
   // Container user
   "remoteUser": "bun",
+  "remoteEnv": {
+    "PATH": "/workspace/.devcontainer/bin:${containerEnv:PATH}"
+  },
 
   // Port forwarding
   "forwardPorts": [50301],

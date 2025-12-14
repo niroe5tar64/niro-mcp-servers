@@ -66,6 +66,34 @@ CLAUDE_SETTINGS_PATH=/workspace/.claude/settings.json
 - ホストの `.ssh` は **read-only** でマウントされています
 - 秘密鍵や `authorized_keys` の破壊・上書きは物理的に不可能です
 
+## DevContainer における `claude` コマンドの実行方法
+
+DevContainer 内では、`claude` コマンドは **必ず**
+`--dangerously-skip-permissions` 付きで実行されるように構成されています。
+
+### 仕組み
+
+- リポジトリ内に `claude` コマンドの **ラッパースクリプト**を配置しています  
+  - パス: `.devcontainer/bin/claude`
+- DevContainer 起動時に、このディレクトリを `PATH` の先頭に追加しています
+- その結果、DevContainer 内で `claude` を実行すると：
+  1. ラッパースクリプトが呼び出される
+  2. 実体の `claude` バイナリを検出する
+  3. 常に `--dangerously-skip-permissions` を付与して実行される
+
+### 利点
+
+- フラグの付け忘れが起きない
+- メンバーごとに実行方法がブレない
+- alias ではなく PATH 制御のため、確実に強制される
+- deny-check.sh（PreToolUse Hook）と組み合わせる前提で安全に運用できる
+
+### 注意点
+
+- DevContainer **外**（ホスト環境）ではこの挙動は保証されません
+- Claude Code は **必ず DevContainer 内で実行**してください
+- 権限制御は `.claude/scripts/deny-check.sh` が最終防衛ラインです
+
 ---
 
 ## 主な拒否対象（例）
