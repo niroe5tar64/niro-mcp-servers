@@ -21,6 +21,10 @@
     }
   },
 
+  "containerEnv": {
+    "CLAUDE_SETTINGS_PATH": "/workspace/.claude/settings.json"
+  },
+
   // Container user
   "remoteUser": "bun",
 
@@ -33,6 +37,6 @@
   // Mount the host's .gitconfig
   "mounts": [
     "source=${localEnv:HOME}/.gitconfig,target=/home/bun/.gitconfig,type=bind,consistency=cached",
-    "source=${localEnv:HOME}/.ssh,target=/home/bun/.ssh,type=bind,consistency=cached"
+    "source=${localEnv:HOME}/.ssh,target=/home/bun/.ssh,type=bind,consistency=cached,readonly"
   ]
 }
