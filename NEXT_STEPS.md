@@ -75,10 +75,11 @@
   "mcpServers": {
     "confluence-md": {
       "command": "docker",
+      "cwd": "${workspaceFolder}",
       "args": [
         "compose",
         "-f",
-        "/Users/eitarofutakuchi/source_code/ops-tools/niro-mcp-servers/docker-compose.yml",
+        "docker-compose.yml",
         "run",
         "--rm",
         "confluence-md"
@@ -89,8 +90,9 @@
 ```
 
 **重要な注意点**:
-- パスは絶対パスで指定してください
-- `/Users/eitarofutakuchi/source_code/ops-tools/niro-mcp-servers` の部分は実際のプロジェクトパスに置き換えてください
+- `${workspaceFolder}`変数を使用することで、プロジェクトルートからの相対パスで指定できます
+- これにより、プロジェクトの絶対パスに依存せず、設定の移植性が向上します
+- `cwd`オプションで作業ディレクトリを指定し、`docker-compose.yml`を相対パスで指定しています
 - 既に他のMCPサーバーが設定されている場合は、`mcpServers` オブジェクト内に追加してください
 
 ---
@@ -263,10 +265,11 @@ docker compose run --rm confluence-md
   "mcpServers": {
     "confluence-md": {
       "command": "docker",
+      "cwd": "${workspaceFolder}",
       "args": [
         "compose",
         "-f",
-        "/Users/eitarofutakuchi/source_code/ops-tools/niro-mcp-servers/docker-compose.yml",
+        "docker-compose.yml",
         "run",
         "--rm",
         "confluence-md"
@@ -275,6 +278,11 @@ docker compose run --rm confluence-md
   }
 }
 ```
+
+**汎用性の高い設定**:
+- `${workspaceFolder}`変数を使用することで、プロジェクトの絶対パスに依存しません
+- `cwd`オプションで作業ディレクトリを指定し、相対パスで`docker-compose.yml`を指定しています
+- この設定は、プロジェクトを別の場所に移動してもそのまま動作します
 
 ---
 
@@ -298,15 +306,14 @@ NEXT_STEPS.md の手順に従って、Cursor MCP設定ファイルを作成し�
 
 ### 前提
 - `.cursor/mcp.json` ファイルは既に作成済み（コミット: `30828e4`）
-- ただし、パスが `<PROJECT_ABSOLUTE_PATH>` というプレースホルダーのまま
+- ✅ パスは `${workspaceFolder}` 変数を使用した汎用的な設定に更新済み
+- ✅ プロジェクトの絶対パスに依存しない設定になっています
 
 ### 手順
 
-1. **プロジェクトパスを実際のパスに置き換える**
-   - `.cursor/mcp.json` を開く
-   - 8行目の `<PROJECT_ABSOLUTE_PATH>` を社用PCの実際のプロジェクトパスに置き換える
-   - 例: `/Users/eitarofutakuchi/source_code/ops-tools/niro-mcp-servers`
-   - 保存してコミット
+1. **設定ファイルの確認（既に完了）**
+   - `.cursor/mcp.json` は `${workspaceFolder}` 変数を使用した汎用的な設定になっています
+   - プロジェクトを別の場所に移動してもそのまま動作します
 
 2. **Cursor を再起動**
    - 設定を反映させるため、Cursorを完全に終了して再起動
