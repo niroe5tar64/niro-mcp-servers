@@ -72,6 +72,19 @@ export async function handleConvertConfluenceToMarkdown(
     convertTables = true,
   } = args;
 
+  // 必須パラメータのバリデーション
+  if (typeof html !== "string") {
+    return {
+      content: [
+        {
+          type: "text",
+          text: "Error: 'html' parameter is required and must be a string",
+        },
+      ],
+      isError: true,
+    };
+  }
+
   try {
     // Confluence HTMLをクリーンなMarkdownに変換
     const markdown = cleanConfluenceHtml(html, {
