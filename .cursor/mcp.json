@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "confluence-md": {
+      "command": "docker",
+      "args": [
+        "compose",
+        "-f",
+        "<PROJECT_ABSOLUTE_PATH>/docker-compose.yml",
+        "run",
+        "--rm",
+        "confluence-md"
+      ]
+    }
+  }
+}
