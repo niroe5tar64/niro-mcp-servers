@@ -18,8 +18,8 @@ Confluence の HTML コンテンツを LLM 向けにクリーンな Markdown に
 ```
 ✅ フェーズ1: コアライブラリ (完了)
 ✅ フェーズ2: MCP サーバー (完了)
-👉 フェーズ3: Docker 動作確認 (次のステップ)
-🔜 フェーズ4: Claude Desktop 統合
+✅ フェーズ3: Docker 動作確認 (完了)
+👉 フェーズ4: Claude Desktop 統合 (次のステップ)
 🔜 フェーズ5: 本番デプロイ・運用
 ```
 
@@ -88,30 +88,23 @@ Confluence の HTML コンテンツを LLM 向けにクリーンな Markdown に
 
 ---
 
-### フェーズ3: Docker 動作確認 🔜
+### フェーズ3: Docker 動作確認 ✅ (完了)
 
-> **注**: Dockerfile と docker-compose.yml は既に完璧な状態で実装済み
-> - ✅ マルチステージビルド
-> - ✅ セキュリティ設定（read-only filesystem, 非rootユーザー）
-> - ✅ stdio通信対応
-> - ✅ 開発用ボリュームマウント
+#### 完了項目
+- ✅ Docker設定の確認
+  - Dockerfile のレビュー（マルチステージビルド、セキュリティ設定）
+  - docker-compose.yml のレビュー（stdio通信、セキュリティオプション）
+- ✅ Docker イメージのビルド成功
+- ✅ コンテナ起動テスト成功
+  - MCPサーバーがstdioモードで正常起動
+  - `Confluence-MD MCP Server running on stdio` 確認
+- ✅ docker-compose.yml の最適化
+  - 古い `version` 属性を削除
 
-#### 実施タスク
-- [ ] 既存のDocker設定を確認
-  - Dockerfile のレビュー
-  - docker-compose.yml のレビュー
-- [ ] Docker イメージのビルド
-  ```bash
-  docker compose build confluence-md
-  ```
-- [ ] コンテナ起動テスト
-  ```bash
-  docker compose run --rm confluence-md
-  ```
-- [ ] 動作確認
-  - コンテナが正常に起動するか
-  - エラーログがないか
-  - MCPサーバーが応答するか
+#### 最終確認
+- ✅ コンテナが正常に起動
+- ✅ エラーログなし（警告は解消済み）
+- ✅ MCPサーバーがstdio通信で応答
 
 ---
 
@@ -154,16 +147,17 @@ Confluence の HTML コンテンツを LLM 向けにクリーンな Markdown に
 
 ## 🔥 現在の最優先タスク
 
-1. **Docker 動作確認** (フェーズ3)
-   - ✅ 既存のDocker設定確認（Dockerfile, docker-compose.yml は実装済み）
-   - [ ] Docker イメージのビルド
-   - [ ] コンテナ起動テスト
-   - [ ] 動作確認（起動・エラーログ・MCP応答）
+1. **Claude Desktop 統合** (フェーズ4)
+   - [ ] Claude Desktop 設定ファイルの作成・追加
+   - [ ] Claude Desktop からの接続テスト
+   - [ ] ツール認識確認（`convert_confluence_to_markdown`）
+   - [ ] 実際のHTML変換テスト
+   - [ ] エンドツーエンド動作確認
 
-2. **Claude Desktop 統合** (フェーズ4)
-   - Claude Desktop 設定ファイルへの追加
-   - 実際の接続・変換テスト
-   - エンドツーエンド動作確認
+2. **本番デプロイ・運用** (フェーズ5)
+   - 本番環境での動作確認
+   - パフォーマンスチューニング
+   - ドキュメント整備
 
 ---
 
@@ -201,6 +195,7 @@ Confluence の HTML コンテンツを LLM 向けにクリーンな Markdown に
 
 | 日付 | 内容 | コミット |
 |------|------|----------|
+| 2025-12-16 | Docker動作確認完了、フェーズ3完了 | (予定) |
 | 2025-12-16 | 必須パラメータバリデーション追加、フェーズ2完了 | `5ecd579` |
 | 2025-12-16 | プロジェクトロードマップ追加 | `866b6dc` |
 | 2025-12-16 | トークン推定精度を改善（CJK対応） | `8622d90` |
