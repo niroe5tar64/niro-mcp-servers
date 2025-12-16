@@ -2,7 +2,7 @@
 
 **niro-mcp-servers** - Confluence → Markdown 変換 MCP サーバープロジェクト
 
-最終更新: 2025-12-16
+最終更新: 2025-12-16 (フェーズ4開始)
 
 ---
 
@@ -19,7 +19,7 @@ Confluence の HTML コンテンツを LLM 向けにクリーンな Markdown に
 ✅ フェーズ1: コアライブラリ (完了)
 ✅ フェーズ2: MCP サーバー (完了)
 ✅ フェーズ3: Docker 動作確認 (完了)
-👉 フェーズ4: Cursor 統合 (次のステップ)
+⏳ フェーズ4: Cursor 統合 (進行中 - Cursorでの作業が必要)
 🔜 フェーズ5: 本番デプロイ・運用
 ```
 
@@ -108,23 +108,28 @@ Confluence の HTML コンテンツを LLM 向けにクリーンな Markdown に
 
 ---
 
-### フェーズ4: Cursor 統合 🔜
+### フェーズ4: Cursor 統合 ⏳ (進行中)
 
 > **重要**: CursorはMCPプロトコルをネイティブサポート済み（2025年1月時点）
 > - ✅ stdio/sse トランスポート対応
 > - ✅ Composer Agent統合（自動ツール使用）
 > - ✅ 最大40個のツールをサポート
 
-#### 予定タスク
-- [ ] Cursor MCP 設定ファイルの作成
-  - `~/.cursor/mcp.json` または `.cursor/mcp.json` への追加
-  - Docker Compose コマンドの設定
+#### 完了項目
+- ✅ Cursor MCP 設定ファイルの作成（`.cursor/mcp.json`）
+  - コミット: `30828e4`
+  - ⚠️ パスはプレースホルダー（`<PROJECT_ABSOLUTE_PATH>`）のまま
+
+#### 残タスク（Cursorで実施）
+- [ ] プロジェクトパスの置き換え
+  - `.cursor/mcp.json` のパスを実際のパスに変更
 - [ ] Cursor からの接続テスト
   - Cursor Settings > Features > MCP でサーバー確認
   - ツール認識確認（`convert_confluence_to_markdown` が表示されるか）
 - [ ] Composer Agent での動作確認
   - 実際の HTML 変換テスト
   - 自動ツール使用の確認
+  - トークン削減率（約50%）の検証
 - [ ] エラーケースの確認
   - 不正な入力データ
   - タイムアウト処理
@@ -156,13 +161,17 @@ Confluence の HTML コンテンツを LLM 向けにクリーンな Markdown に
 
 ## 🔥 現在の最優先タスク
 
-1. **Cursor 統合** (フェーズ4)
-   - [ ] Cursor MCP 設定ファイルの作成（`~/.cursor/mcp.json`）
-   - [ ] MCPサーバー登録（Docker Compose経由）
+1. **Cursor 統合** (フェーズ4) - **社用PCでCursorを使って実施**
+   - ✅ Cursor MCP 設定ファイルの作成（`.cursor/mcp.json`）- コミット: `30828e4`
+   - [ ] `.cursor/mcp.json` のパスを実際のパスに置き換え（8行目）
+   - [ ] Cursor を再起動して設定を反映
    - [ ] Cursor Settings > Features > MCP でサーバー確認
    - [ ] ツール認識確認（`convert_confluence_to_markdown`）
    - [ ] Composer Agent での動作テスト
    - [ ] 実際のHTML変換テスト（エンドツーエンド）
+   - [ ] トークン削減率（約50%）の検証
+
+   > 📝 詳細な手順は `NEXT_STEPS.md` の「Cursorでやること」セクション参照
 
 2. **本番デプロイ・運用** (フェーズ5)
    - 本番環境での動作確認
@@ -205,7 +214,8 @@ Confluence の HTML コンテンツを LLM 向けにクリーンな Markdown に
 
 | 日付 | 内容 | コミット |
 |------|------|----------|
-| 2025-12-16 | Docker動作確認完了、フェーズ3完了 | (予定) |
+| 2025-12-16 | Cursor MCP設定ファイル作成、フェーズ4開始 | `30828e4` |
+| 2025-12-16 | Docker動作確認完了、フェーズ3完了 | `8c9309a` |
 | 2025-12-16 | 必須パラメータバリデーション追加、フェーズ2完了 | `5ecd579` |
 | 2025-12-16 | プロジェクトロードマップ追加 | `866b6dc` |
 | 2025-12-16 | トークン推定精度を改善（CJK対応） | `8622d90` |

@@ -1,7 +1,7 @@
 # 次のステップ
 
 **作成日時**: 2025-12-16
-**最終更新**: 2025-12-16
+**最終更新**: 2025-12-16 (フェーズ4進行中、Cursorでの作業準備完了)
 
 ---
 
@@ -27,13 +27,24 @@
 - ✅ MCPサーバーstdioモード動作確認
 - ✅ docker-compose.yml 最適化（version属性削除）
 
-### 👉 現在地: フェーズ4 - Cursor 統合
+**フェーズ4: Cursor 統合（進行中）**
+- ✅ `.cursor/mcp.json` ファイル作成（コミット: `30828e4`）
+- ⏳ プロジェクトパスの置き換え（Cursorで実施）
+- ⏳ Cursor再起動と接続確認（Cursorで実施）
+- ⏳ 実際のHTML変換テスト（Cursorで実施）
+
+### 👉 現在地: フェーズ4 - Cursor 統合（Cursorでの作業が必要）
 
 **重要な発見**:
 - ✅ CursorはMCPプロトコルをネイティブサポート（2025年1月時点）
 - ✅ stdio/sse トランスポート対応
 - ✅ Composer Agent統合（自動ツール使用）
 - ✅ 最大40個のツールをサポート
+
+**Claude Codeで完了した準備作業**:
+- ✅ `.cursor/mcp.json` ファイル作成
+- ⚠️ パスはプレースホルダー（`<PROJECT_ABSOLUTE_PATH>`）のまま
+- 👉 **次はCursorでの作業が必要です**
 
 ---
 
@@ -283,20 +294,32 @@ NEXT_STEPS.md の手順に従って、Cursor MCP設定ファイルを作成し�
 
 ---
 
-## ✅ 次回のセッションでやること
+## ✅ Cursorでやること（社用PCに切り替えて実施）
 
-1. **`.cursor/mcp.json` ファイルを作成**
-   - プロジェクトルートに配置
-   - 上記の設定例を使用（パスを確認）
+### 前提
+- `.cursor/mcp.json` ファイルは既に作成済み（コミット: `30828e4`）
+- ただし、パスが `<PROJECT_ABSOLUTE_PATH>` というプレースホルダーのまま
+
+### 手順
+
+1. **プロジェクトパスを実際のパスに置き換える**
+   - `.cursor/mcp.json` を開く
+   - 8行目の `<PROJECT_ABSOLUTE_PATH>` を社用PCの実際のプロジェクトパスに置き換える
+   - 例: `/Users/eitarofutakuchi/source_code/ops-tools/niro-mcp-servers`
+   - 保存してコミット
 
 2. **Cursor を再起動**
-   - 設定を反映させる
+   - 設定を反映させるため、Cursorを完全に終了して再起動
 
-3. **動作確認**
-   - Cursor Settings > Features > MCP でサーバー確認
-   - Composer でツールが利用可能か確認
-   - 実際のHTML変換テスト
+3. **MCP サーバー接続を確認**
+   - Cursor Settings > Features > MCP に移動
+   - `confluence-md` サーバーが表示され、ステータスが「Connected」になっているか確認
+   - Composer（Cmd+I）で Available Tools に `convert_confluence_to_markdown` が表示されるか確認
 
-4. **結果を記録**
-   - 成功した場合: フェーズ4完了としてマーク
-   - 問題が発生した場合: エラーログを収集して対応
+4. **実際のHTML変換をテスト**
+   - 上記の「5. Composer Agent で実際のHTML変換をテスト」の手順に従ってテスト実行
+   - トークン削減率（約50%）が達成されているか確認
+
+5. **結果を記録**
+   - 成功した場合: NEXT_STEPS.md と ROADMAP.md を更新してフェーズ4完了としてマーク
+   - 問題が発生した場合: 「📋 問題が発生した場合」のセクションを参照して対応
