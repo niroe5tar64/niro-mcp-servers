@@ -19,7 +19,7 @@ Confluence の HTML コンテンツを LLM 向けにクリーンな Markdown に
 ✅ フェーズ1: コアライブラリ (完了)
 ✅ フェーズ2: MCP サーバー (完了)
 ✅ フェーズ3: Docker 動作確認 (完了)
-👉 フェーズ4: Claude Desktop 統合 (次のステップ)
+👉 フェーズ4: Cursor 統合 (次のステップ)
 🔜 フェーズ5: 本番デプロイ・運用
 ```
 
@@ -108,24 +108,33 @@ Confluence の HTML コンテンツを LLM 向けにクリーンな Markdown に
 
 ---
 
-### フェーズ4: Claude Desktop 統合 🔜
+### フェーズ4: Cursor 統合 🔜
+
+> **重要**: CursorはMCPプロトコルをネイティブサポート済み（2025年1月時点）
+> - ✅ stdio/sse トランスポート対応
+> - ✅ Composer Agent統合（自動ツール使用）
+> - ✅ 最大40個のツールをサポート
 
 #### 予定タスク
-- [ ] Claude Desktop 設定ファイルの作成
-  - `claude_desktop_config.json` への追加
+- [ ] Cursor MCP 設定ファイルの作成
+  - `~/.cursor/mcp.json` または `.cursor/mcp.json` への追加
   - Docker Compose コマンドの設定
-- [ ] Claude Desktop からの接続テスト
+- [ ] Cursor からの接続テスト
+  - Cursor Settings > Features > MCP でサーバー確認
   - ツール認識確認（`convert_confluence_to_markdown` が表示されるか）
+- [ ] Composer Agent での動作確認
   - 実際の HTML 変換テスト
+  - 自動ツール使用の確認
 - [ ] エラーケースの確認
   - 不正な入力データ
   - タイムアウト処理
   - コンテナ起動失敗時の挙動
 
 #### 成功基準
-- Claude Desktop で "convert_confluence_to_markdown" ツールが利用可能
+- Cursor Composer で "convert_confluence_to_markdown" ツールが利用可能
 - Confluence HTML を貼り付けて Markdown 変換が成功
 - トークン削減率が約50%達成
+- Composer Agent が自動的にツールを使用
 
 ---
 
@@ -147,12 +156,13 @@ Confluence の HTML コンテンツを LLM 向けにクリーンな Markdown に
 
 ## 🔥 現在の最優先タスク
 
-1. **Claude Desktop 統合** (フェーズ4)
-   - [ ] Claude Desktop 設定ファイルの作成・追加
-   - [ ] Claude Desktop からの接続テスト
+1. **Cursor 統合** (フェーズ4)
+   - [ ] Cursor MCP 設定ファイルの作成（`~/.cursor/mcp.json`）
+   - [ ] MCPサーバー登録（Docker Compose経由）
+   - [ ] Cursor Settings > Features > MCP でサーバー確認
    - [ ] ツール認識確認（`convert_confluence_to_markdown`）
-   - [ ] 実際のHTML変換テスト
-   - [ ] エンドツーエンド動作確認
+   - [ ] Composer Agent での動作テスト
+   - [ ] 実際のHTML変換テスト（エンドツーエンド）
 
 2. **本番デプロイ・運用** (フェーズ5)
    - 本番環境での動作確認

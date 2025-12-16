@@ -27,29 +27,37 @@
 - ✅ MCPサーバーstdioモード動作確認
 - ✅ docker-compose.yml 最適化（version属性削除）
 
-### 👉 現在地: フェーズ4 - Claude Desktop 統合
+### 👉 現在地: フェーズ4 - Cursor 統合
+
+**重要な発見**:
+- ✅ CursorはMCPプロトコルをネイティブサポート（2025年1月時点）
+- ✅ stdio/sse トランスポート対応
+- ✅ Composer Agent統合（自動ツール使用）
+- ✅ 最大40個のツールをサポート
 
 ---
 
-## 🎯 次にやること: Claude Desktop 統合
+## 🎯 次にやること: Cursor 統合
 
-### 1. Claude Desktop 設定ファイルの場所を確認
+### 1. Cursor MCP 設定ファイルの場所を確認
 
-**macOS**:
+**グローバル設定（すべてのプロジェクトで利用可能）**:
 ```bash
-~/Library/Application Support/Claude/claude_desktop_config.json
+~/.cursor/mcp.json
 ```
 
-**Windows**:
+**プロジェクト固有設定（このプロジェクトのみ）**:
+```bash
+<project-root>/.cursor/mcp.json
 ```
-%APPDATA%\Claude\claude_desktop_config.json
-```
+
+**推奨**: プロジェクト固有設定（`.cursor/mcp.json`）を使用
 
 ---
 
 ### 2. 設定ファイルに MCP サーバーを追加
 
-既存の `claude_desktop_config.json` を開き、以下を追加：
+プロジェクトルートに `.cursor/mcp.json` を作成し、以下を追加：
 
 ```json
 {
@@ -69,34 +77,38 @@
 }
 ```
 
-**重要**:
+**重要な注意点**:
+- パスは絶対パスで指定してください
 - `/Users/eitarofutakuchi/source_code/ops-tools/niro-mcp-servers` の部分は実際のプロジェクトパスに置き換えてください
 - 既に他のMCPサーバーが設定されている場合は、`mcpServers` オブジェクト内に追加してください
 
 ---
 
-### 3. Claude Desktop を再起動
+### 3. Cursor を再起動
 
-設定ファイルを保存したら、Claude Desktop を完全に終了して再起動します。
-
----
-
-### 4. ツールが認識されているか確認
-
-Claude Desktop を開き、以下を確認：
-
-1. **ツールアイコン確認**
-   - チャット画面にツールアイコン（🔧）が表示されるか
-   - `confluence-md` サーバーが接続されているか
-
-2. **ツール一覧確認**
-   - 利用可能なツールに `convert_confluence_to_markdown` が表示されるか
+設定ファイルを保存したら、Cursor を完全に終了して再起動します。
 
 ---
 
-### 5. 実際のHTML変換をテスト
+### 4. MCP サーバーが認識されているか確認
 
-Claude Desktop で以下のように依頼してテストします：
+#### 方法1: Cursor Settings から確認
+
+1. Cursor を開く
+2. `Cursor Settings` > `Features` > `MCP` に移動
+3. `confluence-md` サーバーが表示されているか確認
+4. ステータスが「Connected」になっているか確認
+
+#### 方法2: Available Tools を確認
+
+1. Composer を開く（`Cmd+I` / `Ctrl+I`）
+2. Available Tools に `convert_confluence_to_markdown` が表示されているか確認
+
+---
+
+### 5. Composer Agent で実際のHTML変換をテスト
+
+Cursor Composer で以下のように依頼してテストします：
 
 ```
 以下のConfluence HTMLをMarkdownに変換してください：
@@ -110,38 +122,85 @@ Claude Desktop で以下のように依頼してテストします：
       <p>重要な情報</p>
     </ac:rich-text-body>
   </ac:structured-macro>
+  <table>
+    <tr>
+      <th>項目</th>
+      <th>値</th>
+    </tr>
+    <tr>
+      <td>テスト1</td>
+      <td>100</td>
+    </tr>
+  </table>
 </div>
 </html>
 ```
 
 **期待される結果**:
-- MCPサーバーが `convert_confluence_to_markdown` ツールを使用
+- Composer Agent が `convert_confluence_to_markdown` ツールを自動的に使用
 - クリーンなMarkdownが返される
-- トークン推定値が表示される
+- トークン推定値が表示される（元: ○○トークン → 変換後: △△トークン）
+- 約50%のトークン削減が確認できる
+
+**Composer Agent の動作**:
+- ツール名や説明から関連性を判断し、自動的に使用
+- 明示的にツール使用を指示する場合: 「convert_confluence_to_markdown ツールを使って変換してください」
 
 ---
 
 ## 📋 問題が発生した場合
 
-### Claude Desktop がツールを認識しない
-1. 設定ファイルのパスが正しいか確認
-2. JSON構文が正しいか確認（カンマ、括弧など）
-3. Claude Desktop を完全に再起動
-4. ログを確認:
-   - macOS: `~/Library/Logs/Claude/`
-   - Windows: `%APPDATA%\Claude\logs\`
+### Cursor がツールを認識しない
+
+1. **設定ファイルの確認**
+   - `.cursor/mcp.json` のパスが正しいか
+   - JSON構文が正しいか（カンマ、括弧など）
+   - 絶対パスを使用しているか
+
+2. **Cursor を完全に再起動**
+   - すべてのウィンドウを閉じる
+   - プロセスを完全に終了
+   - 再度起動
+
+3. **ログを確認**
+   - Cursor Developer Tools を開く（`Cmd+Option+I` / `Ctrl+Shift+I`）
+   - Console でエラーメッセージを確認
+
+4. **手動でDockerコンテナをテスト**
+   ```bash
+   cd /Users/eitarofutakuchi/source_code/ops-tools/niro-mcp-servers
+   docker compose run --rm confluence-md
+   ```
+   - 正常に起動するか確認
+   - エラーが出ないか確認
 
 ### Docker コンテナが起動しない
+
 ```bash
+# イメージを再ビルド
+docker compose build --no-cache confluence-md
+
 # 手動でテスト
-cd /Users/eitarofutakuchi/source_code/ops-tools/niro-mcp-servers
 docker compose run --rm confluence-md
 ```
 
 ### ツールが動作しない
-- MCPサーバーのログを確認
-- Dockerコンテナのログを確認: `docker compose logs confluence-md`
-- パッケージのテストを再実行: `cd packages/confluence-md && bun test`
+
+1. **MCPサーバーのログを確認**
+   ```bash
+   docker compose logs confluence-md
+   ```
+
+2. **テストを再実行**
+   ```bash
+   cd packages/confluence-md
+   bun test
+   ```
+
+3. **Dockerイメージを再ビルド**
+   ```bash
+   docker compose build --no-cache confluence-md
+   ```
 
 ---
 
@@ -149,36 +208,95 @@ docker compose run --rm confluence-md
 
 **次はフェーズ5: 本番デプロイ・運用**
 
-1. パフォーマンスチューニング
+1. **パフォーマンスチューニング**
    - 大容量HTMLの処理性能測定
    - メモリ使用量の最適化
+   - 並列処理の検討
 
-2. ドキュメント整備
+2. **ドキュメント整備**
    - ユーザーガイド作成
-   - トラブルシューティング
+   - トラブルシューティングガイド
+   - API ドキュメント
 
-3. 本番環境での長期運用テスト
+3. **本番環境での長期運用テスト**
+   - 実際のConfluenceページでのテスト
+   - エッジケースの収集
+   - フィードバックの収集
 
 ---
 
 ## 📚 参考ドキュメント
 
+### プロジェクト
 - **全体計画**: `ROADMAP.md`
 - **プロジェクト概要**: `README.md`
 - **パッケージ詳細**: `packages/confluence-md/README.md`
-- **MCP公式ドキュメント**: https://modelcontextprotocol.io/
-- **Claude Desktop設定ガイド**: https://docs.anthropic.com/claude/docs
+
+### Cursor MCP 統合
+- **Cursor MCP ドキュメント**: https://docs.cursor.com/context/model-context-protocol
+- **Cursor Settings**: Cursor Settings > Features > MCP
+- **MCP 公式ドキュメント**: https://modelcontextprotocol.io/
+
+### 参考記事
+- [Use Model Context Protocol (MCP) in Cursor IDE](https://steveshao.com/posts/2025/note-use-mcp-for-cursor/)
+- [How to Add a New MCP Server to Cursor | Snyk](https://snyk.io/articles/how-to-add-a-new-mcp-server-to-cursor/)
+
+---
+
+## 🔧 設定例: .cursor/mcp.json
+
+プロジェクトルートに作成してください：
+
+```json
+{
+  "mcpServers": {
+    "confluence-md": {
+      "command": "docker",
+      "args": [
+        "compose",
+        "-f",
+        "/Users/eitarofutakuchi/source_code/ops-tools/niro-mcp-servers/docker-compose.yml",
+        "run",
+        "--rm",
+        "confluence-md"
+      ]
+    }
+  }
+}
+```
 
 ---
 
 ## 💬 新しいセッションでの指示例
 
+このファイルを読んで作業を再開する場合：
+
 ```
-NEXT_STEPS.md を読んで、フェーズ4のClaude Desktop統合を進めてください。
+ROADMAP.md と NEXT_STEPS.md を読んで、フェーズ4のCursor統合を進めてください。
 ```
 
 または
 
 ```
-ROADMAP.md と NEXT_STEPS.md を読んで、現在の状況と次のステップを教えてください。
+NEXT_STEPS.md の手順に従って、Cursor MCP設定ファイルを作成してください。
 ```
+
+---
+
+## ✅ 次回のセッションでやること
+
+1. **`.cursor/mcp.json` ファイルを作成**
+   - プロジェクトルートに配置
+   - 上記の設定例を使用（パスを確認）
+
+2. **Cursor を再起動**
+   - 設定を反映させる
+
+3. **動作確認**
+   - Cursor Settings > Features > MCP でサーバー確認
+   - Composer でツールが利用可能か確認
+   - 実際のHTML変換テスト
+
+4. **結果を記録**
+   - 成功した場合: フェーズ4完了としてマーク
+   - 問題が発生した場合: エラーログを収集して対応
