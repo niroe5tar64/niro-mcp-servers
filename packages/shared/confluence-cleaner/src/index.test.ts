@@ -38,12 +38,12 @@ describe("calculateTokenReduction", () => {
   });
 
   test("日本語テキストでも動作する", () => {
-    const original = "あいうえおかきくけこ"; // 10文字 = 3トークン（切り上げ）
-    const cleaned = "あいうえお"; // 5文字 = 2トークン（切り上げ）
+    const original = "あいうえおかきくけこ"; // 10文字 ÷ 2.5 = 4トークン（切り上げ）
+    const cleaned = "あいうえお"; // 5文字 ÷ 2.5 = 2トークン（切り上げ）
     const reduction = calculateTokenReduction(original, cleaned);
 
-    // 10文字→3トークン, 5文字→2トークン = (3-2)/3*100 = 33.33...
-    expect(reduction).toBeCloseTo(33.33, 1);
+    // 改善されたトークン推定: (4-2)/4*100 = 50%
+    expect(reduction).toBe(50);
   });
 
   test("実際のHTMLとMarkdownで削減率を計算", () => {
@@ -55,6 +55,21 @@ describe("calculateTokenReduction", () => {
     // (19-3)/19*100 = 84.21...
     expect(reduction).toBeGreaterThan(80); // 80%以上削減されている
     expect(reduction).toBeLessThan(90); // 90%未満
+  });
+
+  test("日英混在テキストのトークン推定", () => {
+    const text = "Hello こんにちは World 世界"; // 英語8文字 + 日本語6文字
+    const reduction = calculateTokenReduction(text, "");
+
+    // 英語: 8文字 ÷ 4 = 2トークン
+    // 日本語: 6文字 ÷ 2.5 = 2.4トークン（切り上げで3）
+    // 合計: 5トークン削減 = 100%
+    expect(reduction).toBe(100);
+  });
+
+  test("空文字列のトークン推定", () => {
+    const reduction = calculateTokenReduction("", "");
+    expect(reduction).toBeNaN(); // 0で割ることになるのでNaN
   });
 });
 

@@ -27,6 +27,22 @@ export interface CleanerOptions {
 }
 
 /**
+ * サポートされているConfluenceマクロタイプ
+ */
+export type MacroType = "info" | "warning" | "note" | "tip" | "code";
+
+/**
+ * 認識可能なマクロタイプの集合（実行時チェック用）
+ */
+const SUPPORTED_MACRO_TYPES: ReadonlySet<string> = new Set<MacroType>([
+  "info",
+  "warning",
+  "note",
+  "tip",
+  "code",
+]);
+
+/**
  * TurndownServiceのシングルトンキャッシュ
  * convertTablesオプションごとにインスタンスを保持
  */
@@ -197,6 +213,13 @@ function expandConfluenceMacros(html: string): string {
 }
 
 /**
+ * マクロタイプがサポートされているかチェック
+ */
+function isSupportedMacroType(macroType: string): macroType is MacroType {
+  return SUPPORTED_MACRO_TYPES.has(macroType.toLowerCase());
+}
+
+/**
  * Expand Confluence macro to readable format (HTML形式で返す)
  * Turndownが後で適切にMarkdownに変換する
  */
@@ -206,8 +229,15 @@ export function expandMacro(
   language?: string,
 ): string {
   const trimmedContent = content.trim();
+  const normalizedType = macroType.toLowerCase();
 
-  switch (macroType.toLowerCase()) {
+  // 型安全なマクロ展開
+  if (!isSupportedMacroType(normalizedType)) {
+    // 未知のマクロタイプはそのまま返す
+    return trimmedContent;
+  }
+
+  switch (normalizedType) {
     case "info":
       return `<div><strong>ℹ️ INFO</strong><br><br>${trimmedContent}</div>`;
 
@@ -226,10 +256,6 @@ export function expandMacro(
         return `<pre><code class="language-${language}">${escapeHtml(trimmedContent)}</code></pre>`;
       }
       return `<pre><code>${escapeHtml(trimmedContent)}</code></pre>`;
-
-    default:
-      // 未知のマクロタイプはそのまま返す
-      return trimmedContent;
   }
 }
 
@@ -254,13 +280,45 @@ export function calculateTokenReduction(
 ): number {
   const originalTokens = estimateTokens(original);
   const cleanedTokens = estimateTokens(cleaned);
+
+  // 元のテキストが空の場合は計算不可
+  if (originalTokens === 0) {
+    return Number.NaN;
+  }
+
   return ((originalTokens - cleanedTokens) / originalTokens) * 100;
 }
 
 /**
- * Estimate token count (rough approximation)
+ * Estimate token count (improved approximation)
+ *
+ * より正確なトークン推定のため、以下の要素を考慮：
+ * - 日本語（CJK文字）: 約2-3文字/トークン
+ * - 英語・記号: 約4文字/トークン
+ * - 空白・改行: カウントから除外
  */
 function estimateTokens(text: string): number {
-  // Rough estimate: 1 token ≈ 4 characters for English text
-  return Math.ceil(text.length / 4);
+  if (!text || text.length === 0) {
+    return 0;
+  }
+
+  // CJK文字（中国語、日本語、韓国語）のパターン
+  const cjkPattern = /[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/g;
+
+  // 空白と改行を除去
+  const withoutWhitespace = text.replace(/\s+/g, "");
+
+  // CJK文字をカウント
+  const cjkMatches = withoutWhitespace.match(cjkPattern);
+  const cjkCount = cjkMatches ? cjkMatches.length : 0;
+
+  // 非CJK文字をカウント
+  const nonCjkCount = withoutWhitespace.length - cjkCount;
+
+  // トークン推定
+  // CJK: 2.5文字/トークン, 非CJK: 4文字/トークン
+  const cjkTokens = cjkCount / 2.5;
+  const nonCjkTokens = nonCjkCount / 4;
+
+  return Math.ceil(cjkTokens + nonCjkTokens);
 }
