@@ -4,16 +4,16 @@ WORKDIR /app
 
 # Install dependencies
 FROM base AS install
-COPY package.json bun.lockb* ./
-# Copy all package.json files maintaining directory structure
-COPY packages/confluence-md/package.json ./packages/confluence-md/
-COPY packages/shared/confluence-cleaner/package.json ./packages/shared/confluence-cleaner/
-RUN bun install --frozen-lockfile
+# Copy all files first to ensure workspace resolution works correctly
+COPY . .
+# Install dependencies (workspace dependencies will be resolved)
+RUN bun install
 
 # Build
 FROM base AS build
 COPY --from=install /app/node_modules ./node_modules
-COPY . .
+COPY --from=install /app/packages ./packages
+COPY package.json bun.lock* bunfig.toml* ./
 RUN bun run build
 
 # Production

@@ -12,7 +12,13 @@ RUN apt-get update && apt-get install -y \
     sudo \
     ca-certificates \
     npm \
+    locales \
     && rm -rf /var/lib/apt/lists/*
+
+# Generate and configure locales
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
+    locale-gen && \
+    update-locale LANG=en_US.UTF-8
 
 # Install Claude Code globally
 RUN npm install -g @anthropic-ai/claude-code
@@ -30,6 +36,10 @@ RUN git config --global --add safe.directory /workspace
 # Set up Bun environment
 ENV BUN_INSTALL=/home/bun/.bun
 ENV PATH=$BUN_INSTALL/bin:$PATH
+
+# Set locale environment variables
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
 
 # Switch to bun user
 USER bun
