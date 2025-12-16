@@ -18,7 +18,7 @@ Confluence の HTML コンテンツを LLM 向けにクリーンな Markdown に
 ```
 ✅ フェーズ1: コアライブラリ (完了)
 ✅ フェーズ2: MCP サーバー (完了)
-👉 フェーズ3: Docker 統合 (次のステップ)
+👉 フェーズ3: Docker 動作確認 (次のステップ)
 🔜 フェーズ4: Claude Desktop 統合
 🔜 フェーズ5: 本番デプロイ・運用
 ```
@@ -88,24 +88,30 @@ Confluence の HTML コンテンツを LLM 向けにクリーンな Markdown に
 
 ---
 
-### フェーズ3: Docker 統合 🔜
+### フェーズ3: Docker 動作確認 🔜
 
-#### 予定タスク
-- [ ] Dockerfile の確認・調整
-  - マルチステージビルドの最適化
-  - セキュリティ設定（非rootユーザー、read-only filesystem）
-- [ ] docker-compose.yml の設定確認
-  - confluence-md サービス定義
-  - ネットワーク設定
-  - ボリュームマウント
-- [ ] Docker イメージのビルド・テスト
+> **注**: Dockerfile と docker-compose.yml は既に完璧な状態で実装済み
+> - ✅ マルチステージビルド
+> - ✅ セキュリティ設定（read-only filesystem, 非rootユーザー）
+> - ✅ stdio通信対応
+> - ✅ 開発用ボリュームマウント
+
+#### 実施タスク
+- [ ] 既存のDocker設定を確認
+  - Dockerfile のレビュー
+  - docker-compose.yml のレビュー
+- [ ] Docker イメージのビルド
   ```bash
   docker compose build confluence-md
+  ```
+- [ ] コンテナ起動テスト
+  ```bash
   docker compose run --rm confluence-md
   ```
-- [ ] コンテナ内での動作確認
-  - MCP プロトコル通信テスト
-  - エラーハンドリング確認
+- [ ] 動作確認
+  - コンテナが正常に起動するか
+  - エラーログがないか
+  - MCPサーバーが応答するか
 
 ---
 
@@ -148,19 +154,16 @@ Confluence の HTML コンテンツを LLM 向けにクリーンな Markdown に
 
 ## 🔥 現在の最優先タスク
 
-1. **Docker 統合** (フェーズ3)
-   - Dockerfile の確認・調整
-   - docker-compose.yml の設定確認
-   - Docker イメージのビルド・テスト
-   - コンテナ内での動作確認
+1. **Docker 動作確認** (フェーズ3)
+   - ✅ 既存のDocker設定確認（Dockerfile, docker-compose.yml は実装済み）
+   - [ ] Docker イメージのビルド
+   - [ ] コンテナ起動テスト
+   - [ ] 動作確認（起動・エラーログ・MCP応答）
 
-2. **手動動作確認** (オプション)
-   - `bun run dev` でローカル起動テスト
-   - MCP リクエストの送受信確認
-
-3. **Claude Desktop 統合** (フェーズ4)
+2. **Claude Desktop 統合** (フェーズ4)
    - Claude Desktop 設定ファイルへの追加
    - 実際の接続・変換テスト
+   - エンドツーエンド動作確認
 
 ---
 
