@@ -223,6 +223,166 @@ docker compose run --rm confluence-md
 
 **次はフェーズ5: 本番デプロイ・運用**
 
+### デプロイ方法の選択肢
+
+> **注意**: 現在の構成（ローカルDockerコンテナ）で十分な場合は、デプロイは不要です。
+> MCPサーバーは通常、CursorやClaude Desktopと同じマシン上で実行されることが前提です。
+
+もしもデプロイする場合、以下の選択肢があります：
+
+#### 1. ローカルDockerコンテナ（推奨・現在の構成）✅
+
+**特徴**:
+- 各開発者のマシンで実行
+- セキュリティが高い（データが外部に送信されない）
+- ネットワーク遅延がない
+- 設定が簡単
+
+**用途**: 個人利用、小規模チーム
+
+**設定**: 既に `.cursor/mcp.json` で設定済み
+
+---
+
+#### 2. Dockerイメージの共有（チーム内共有）
+
+**特徴**:
+- コンテナレジストリ（Docker Hub、GitHub Container Registry、社内レジストリ）にイメージを公開
+- チームメンバーが同じイメージを使用可能
+- バージョン管理が容易
+
+**手順**:
+
+```bash
+# 1. Dockerイメージをビルド
+docker compose build confluence-md
+
+# 2. イメージにタグを付ける
+docker tag niro-mcp-servers-confluence-md:latest \
+  your-registry/niro-mcp-confluence-md:v1.0.0
+
+# 3. レジストリにプッシュ
+docker push your-registry/niro-mcp-confluence-md:v1.0.0
+```
+
+**`.cursor/mcp.json` の設定例**:
+```json
+{
+  "mcpServers": {
+    "confluence-md": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "your-registry/niro-mcp-confluence-md:v1.0.0"
+      ]
+    }
+  }
+}
+```
+
+**用途**: チーム内で統一されたバージョンを使用したい場合
+
+---
+
+#### 3. リモートサーバーへのデプロイ（HTTPモード）
+
+**特徴**:
+- クラウド（AWS、GCP、Azure）や社内サーバーにデプロイ
+- HTTP経由でリモートからアクセス可能
+- 複数のクライアントから共有利用可能
+
+**注意点**:
+- CursorはHTTPモードのMCPサーバーを直接サポートしていない可能性があります
+- Claude Desktopや他のMCPクライアントでHTTPモードを使用する場合に有効
+- セキュリティ設定（認証、HTTPS）が必要
+
+**手順**:
+
+1. **Docker Compose設定（HTTPモード）**:
+```yaml
+# docker-compose.prod.yml
+services:
+  confluence-md:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "50301:50301"
+    environment:
+      - TRANSPORT_MODE=http
+      - PORT=50301
+      - HOST=0.0.0.0
+    # セキュリティ設定を追加
+    # - 認証トークン
+    # - HTTPS/TLS
+    # - レート制限
+```
+
+2. **デプロイ先の例**:
+   - **AWS ECS/Fargate**: コンテナオーケストレーション
+   - **AWS EC2**: シンプルなVMデプロイ
+   - **Google Cloud Run**: サーバーレスコンテナ
+   - **Azure Container Instances**: マネージドコンテナ
+   - **社内Kubernetes**: オンプレミス/ハイブリッド
+
+3. **HTTPモードでの接続**（Claude Desktopの場合）:
+```json
+{
+  "mcpServers": {
+    "confluence-md": {
+      "url": "https://your-server.com:50301/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_TOKEN"
+      }
+    }
+  }
+}
+```
+
+**用途**: 
+- 複数のクライアントから共有利用したい場合
+- 中央集約的な管理が必要な場合
+- 開発環境と本番環境を分離したい場合
+
+---
+
+#### 4. Kubernetes/ECS などのコンテナオーケストレーション
+
+**特徴**:
+- スケーラブルな運用
+- 自動復旧、ロードバランシング
+- 複数インスタンスでの運用
+
+**注意点**:
+- MCPサーバーは通常ステートレスなので、スケーリングのメリットは限定的
+- セッション管理が必要（HTTPモードの場合）
+
+**用途**: 大規模運用、高可用性が必要な場合
+
+---
+
+### 推奨アプローチ
+
+**現時点では、ローカルDockerコンテナ（選択肢1）を推奨します**:
+
+✅ **理由**:
+- MCPサーバーはCursor/Claude Desktopと同じマシンで実行するのが標準
+- セキュリティが高い（データが外部に送信されない）
+- 設定が簡単
+- ネットワーク遅延がない
+- 追加のインフラコストが不要
+
+**デプロイが必要になるケース**:
+- チーム全体で統一されたバージョンを使用したい → **選択肢2（Dockerイメージ共有）**
+- リモートからアクセスする必要がある → **選択肢3（HTTPモード）**
+- 大規模運用が必要 → **選択肢4（Kubernetes/ECS）**
+
+---
+
+### その他のフェーズ5タスク
+
 1. **パフォーマンスチューニング**
    - 大容量HTMLの処理性能測定
    - メモリ使用量の最適化
