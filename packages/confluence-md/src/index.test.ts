@@ -1,5 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { type ChildProcess, spawn } from "node:child_process";
+import { createServer } from "node:http";
+import { fileURLToPath } from "node:url";
 
 /**
  * Confluence-MD MCP Server Integration Tests
@@ -8,14 +10,31 @@ import { type ChildProcess, spawn } from "node:child_process";
  * 実際にサーバープロセスを起動し、HTTP経由でMCPプロトコルをテストします。
  */
 describe("Confluence-MD MCP Server Integration Tests", () => {
-  const PORT = 50302; // テスト用のポート（本番の50301と被らないように）
-  const BASE_URL = `http://localhost:${PORT}`;
+  // 固定ポートだとCI/開発環境で衝突しやすいので、空きポートを動的に割り当てる
+  let port = 0;
+  let baseUrl = "";
   let serverProcess: ChildProcess | null = null;
   let sessionId: string | null = null;
 
   // ========================================
   // ヘルパー関数
   // ========================================
+
+  async function getAvailablePort(): Promise<number> {
+    return await new Promise<number>((resolve, reject) => {
+      const s = createServer();
+      s.on("error", reject);
+      s.listen(0, "127.0.0.1", () => {
+        const addr = s.address();
+        if (!addr || typeof addr === "string") {
+          s.close(() => reject(new Error("Failed to acquire port")));
+          return;
+        }
+        const p = addr.port;
+        s.close(() => resolve(p));
+      });
+    });
+  }
 
   /**
    * サーバー起動を待つヘルパー関数
@@ -26,7 +45,7 @@ describe("Confluence-MD MCP Server Integration Tests", () => {
   ): Promise<boolean> {
     for (let i = 0; i < maxRetries; i++) {
       try {
-        const response = await fetch(`${BASE_URL}/health`);
+        const response = await fetch(`${baseUrl}/health`);
         if (response.ok) {
           return true;
         }
@@ -56,7 +75,7 @@ describe("Confluence-MD MCP Server Integration Tests", () => {
       id: 0,
     };
 
-    const response = await fetch(`${BASE_URL}/mcp`, {
+    const response = await fetch(`${baseUrl}/mcp`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -101,7 +120,7 @@ describe("Confluence-MD MCP Server Integration Tests", () => {
     params: Record<string, unknown>,
     id: number,
   ): Promise<Record<string, unknown>> {
-    const response = await fetch(`${BASE_URL}/mcp`, {
+    const response = await fetch(`${baseUrl}/mcp`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -120,13 +139,18 @@ describe("Confluence-MD MCP Server Integration Tests", () => {
   }
 
   beforeAll(async () => {
+    port = await getAvailablePort();
+    baseUrl = `http://127.0.0.1:${port}`;
+
     // HTTPモードでサーバーを起動
-    serverProcess = spawn("bun", ["run", "src/index.ts"], {
-      cwd: "/workspace/packages/confluence-md",
+    // "bun" バイナリ名に依存すると環境によってspawnが失敗するため、実行中のbunのパスを使う。
+    serverProcess = spawn(process.execPath, ["run", "src/index.ts"], {
+      // テスト実行環境に依存しないよう、このファイルから相対でcwdを決める
+      cwd: fileURLToPath(new URL("..", import.meta.url)),
       env: {
         ...process.env,
         TRANSPORT_MODE: "http",
-        PORT: PORT.toString(),
+        PORT: port.toString(),
         HOST: "127.0.0.1",
       },
       stdio: ["ignore", "pipe", "pipe"],
@@ -161,7 +185,7 @@ describe("Confluence-MD MCP Server Integration Tests", () => {
 
   describe("Health Check", () => {
     test("GET /health が正常に応答する", async () => {
-      const response = await fetch(`${BASE_URL}/health`);
+      const response = await fetch(`${baseUrl}/health`);
 
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toContain(
@@ -294,7 +318,7 @@ describe("Confluence-MD MCP Server Integration Tests", () => {
     });
 
     test("不正なJSONでエラーになる", async () => {
-      const response = await fetch(`${BASE_URL}/mcp`, {
+      const response = await fetch(`${baseUrl}/mcp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -311,7 +335,7 @@ describe("Confluence-MD MCP Server Integration Tests", () => {
 
   describe("Unknown Endpoints", () => {
     test("存在しないエンドポイントで 404 を返す", async () => {
-      const response = await fetch(`${BASE_URL}/unknown`);
+      const response = await fetch(`${baseUrl}/unknown`);
       expect(response.status).toBe(404);
     });
   });

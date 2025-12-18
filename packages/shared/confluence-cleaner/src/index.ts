@@ -157,10 +157,14 @@ function removeConfluenceMetadata(html: string): string {
  */
 function expandConfluenceMacros(html: string): string {
   try {
-    let result = html;
+    // まずcheerio(XMLモード)でConfluenceの名前空間タグ(ac: / ri:)を構造的に処理する。
+    // 正規表現ベースだと include/expand/new_window_link/widget などが落ちやすいため。
+    const processed = expandConfluenceMacrosWithCheerio(html);
+
+    // cheerio処理が効かないケースのため、既存の正規表現フォールバックも残す。
+    let result = processed;
 
     // パターン1: Confluence標準の<ac:structured-macro>形式
-    // 例: <ac:structured-macro ac:name="info"><ac:rich-text-body>content</ac:rich-text-body></ac:structured-macro>
     const acMacroPattern =
       /<ac:structured-macro[^>]*ac:name="([^"]+)"[^>]*>([\s\S]*?)<\/ac:structured-macro>/gi;
 
@@ -208,6 +212,187 @@ function expandConfluenceMacros(html: string): string {
     return result;
   } catch (error) {
     console.warn("Failed to expand Confluence macros:", error);
+    return html;
+  }
+}
+
+/**
+ * Confluence名前空間タグ(ac: / ri:)をcheerioで処理して、意味のあるHTMLに正規化する。
+ * - structured-macro: include/expand/new_window_link/widget/toc/linkgraph などを展開
+ * - layout: セクション/セルのラッパーを剥がす
+ * - time: datetimeを文字列化
+ * - image(attachment): turndownが扱える<img>へ
+ */
+function expandConfluenceMacrosWithCheerio(html: string): string {
+  try {
+    const $ = cheerio.load(html, {
+      // Confluenceの ac: / ri: など名前空間タグを崩さず扱う
+      xml: { decodeEntities: false },
+    });
+
+    const getMacroParams = (macroEl: cheerio.Element) => {
+      const params: Record<string, string> = {};
+      $(macroEl)
+        .find("ac\\:parameter")
+        .each((_, p) => {
+          const key = ($(p).attr("ac:name") || "").trim();
+          const value = $(p).text().trim();
+          if (key) {
+            params[key] = value;
+          }
+        });
+      return params;
+    };
+
+    const getMacroBodyHtml = (macroEl: cheerio.Element) => {
+      const rich = $(macroEl).find("ac\\:rich-text-body").first();
+      if (rich.length) return (rich.html() || "").trim();
+      const plain = $(macroEl).find("ac\\:plain-text-body").first();
+      if (plain.length) return plain.text().trim();
+      return $(macroEl).text().trim();
+    };
+
+    // structured-macro を展開
+    $("ac\\:structured-macro").each((_, el) => {
+      const macroName = ($(el).attr("ac:name") || "").trim();
+      if (!macroName) return;
+
+      const params = getMacroParams(el);
+      const bodyHtml = getMacroBodyHtml(el);
+
+      switch (macroName.toLowerCase()) {
+        case "toc":
+          // 目次はLLM向けMarkdownではノイズになりがちなので削除
+          $(el).replaceWith("");
+          return;
+
+        case "include": {
+          const pageTitle =
+            $(el).find("ri\\:page").attr("ri:content-title")?.trim() || "";
+          const spaceKey =
+            $(el).find("ri\\:space").attr("ri:space-key")?.trim() || "";
+          const label = pageTitle || spaceKey || "Included content";
+          $(el).replaceWith(
+            `<p><em>Included page:</em> ${escapeHtml(label)}</p>`,
+          );
+          return;
+        }
+
+        case "expand": {
+          const title = (params.title || "Details").trim();
+          // <details> はturndownで落ちやすいので、シンプルなHTMLへ正規化
+          $(el).replaceWith(
+            `<div><strong>▶ ${escapeHtml(
+              title,
+            )}</strong><br><br>${bodyHtml}</div>`,
+          );
+          return;
+        }
+
+        case "new_window_link": {
+          const link = (params.link || "").trim();
+          const text = (params.body || params.link || link || "link").trim();
+          if (!link) {
+            $(el).replaceWith(escapeHtml(text));
+            return;
+          }
+          $(el).replaceWith(
+            `<a href="${escapeHtml(link)}">${escapeHtml(text)}</a>`,
+          );
+          return;
+        }
+
+        case "widget": {
+          const url =
+            $(el).find("ri\\:url").attr("ri:value")?.trim() ||
+            (params.url || "").trim();
+          const width = (params.width || "").trim();
+          const height = (params.height || "").trim();
+          const size =
+            width || height ? ` (${width || "?"}x${height || "?"})` : "";
+          const label = url ? `Widget: ${url}${size}` : `Widget${size}`;
+          if (url) {
+            $(el).replaceWith(
+              `<p><a href="${escapeHtml(url)}">${escapeHtml(
+                "Widget",
+              )}</a>${escapeHtml(size)}</p>`,
+            );
+          } else {
+            $(el).replaceWith(`<p>${escapeHtml(label)}</p>`);
+          }
+          return;
+        }
+
+        case "linkgraph": {
+          const spaceKey =
+            $(el).find("ri\\:space").attr("ri:space-key")?.trim() || "";
+          const labels = (params.labels || "").trim();
+          const label = [
+            "Link graph",
+            spaceKey ? `space=${spaceKey}` : "",
+            labels ? `labels=${labels}` : "",
+          ]
+            .filter(Boolean)
+            .join(" ");
+          $(el).replaceWith(`<p><em>${escapeHtml(label)}</em></p>`);
+          return;
+        }
+
+        default: {
+          // 既存対応( info/warning/note/tip/code ) は共通関数に委譲
+          if (
+            ["info", "warning", "note", "tip", "code"].includes(
+              macroName.toLowerCase(),
+            )
+          ) {
+            const language =
+              $(el)
+                .find('ac\\:parameter[ac\\:name="language"]')
+                .first()
+                .text()
+                .trim() || undefined;
+            $(el).replaceWith(expandMacro(macroName, bodyHtml, language));
+          } else {
+            // 未知マクロはbodyだけ残す（パラメータ等のノイズを落とす）
+            $(el).replaceWith(bodyHtml);
+          }
+        }
+      }
+    });
+
+    // ac:image (attachment) を <img> に変換
+    $("ac\\:image").each((_, el) => {
+      const filename =
+        $(el).find("ri\\:attachment").attr("ri:filename")?.trim() || "";
+      const width = ($(el).attr("ac:width") || "").trim();
+      if (!filename) {
+        $(el).replaceWith("");
+        return;
+      }
+      const widthAttr = width ? ` width="${escapeHtml(width)}"` : "";
+      $(el).replaceWith(
+        `<img src="attachment:${escapeHtml(
+          filename,
+        )}" alt="${escapeHtml(filename)}"${widthAttr} />`,
+      );
+    });
+
+    // <time datetime="..."/> をテキスト化
+    $("time").each((_, el) => {
+      const dt = ($(el).attr("datetime") || "").trim();
+      const text = dt || $(el).text().trim();
+      $(el).replaceWith(escapeHtml(text));
+    });
+
+    // layout系ラッパーは剥がす（順序を保って中身を残す）
+    $("ac\\:layout, ac\\:layout-section, ac\\:layout-cell").each((_, el) => {
+      const contents = $(el).contents();
+      $(el).replaceWith(contents);
+    });
+
+    return $.root().html() || html;
+  } catch {
+    // cheerioパースに失敗した場合は元のHTMLを返す
     return html;
   }
 }

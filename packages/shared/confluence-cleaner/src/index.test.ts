@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
 import {
   calculateTokenReduction,
   cleanConfluenceHtml,
@@ -321,5 +322,105 @@ describe("Confluence標準マクロ形式", () => {
 
     expect(result).toContain("```javascript");
     expect(result).toContain("console.log('test');");
+  });
+
+  test("<ac:structured-macro>形式のincludeマクロを展開（ページタイトルを保持）", () => {
+    const html = `<ac:structured-macro ac:name="include">
+      <ac:parameter ac:name="">
+        <ac:link><ri:page ri:content-title="Meta" /></ac:link>
+      </ac:parameter>
+    </ac:structured-macro>`;
+    const result = cleanConfluenceHtml(html, { removeMetadata: false });
+    expect(result).toContain("Included page:");
+    expect(result).toContain("Meta");
+  });
+
+  test("<ac:structured-macro>形式のexpandマクロを展開（titleとbodyを保持）", () => {
+    const html = `<ac:structured-macro ac:name="expand">
+      <ac:parameter ac:name="title">ヘッダー</ac:parameter>
+      <ac:rich-text-body><p>Inside</p></ac:rich-text-body>
+    </ac:structured-macro>`;
+    const result = cleanConfluenceHtml(html, { removeMetadata: false });
+    expect(result).toContain("▶ ヘッダー");
+    expect(result).toContain("Inside");
+  });
+
+  test("<ac:structured-macro>形式のnew_window_linkマクロをリンクに変換", () => {
+    const html = `<ac:structured-macro ac:name="new_window_link">
+      <ac:parameter ac:name="link">https://example.com</ac:parameter>
+      <ac:parameter ac:name="body">Example</ac:parameter>
+    </ac:structured-macro>`;
+    const result = cleanConfluenceHtml(html, { removeMetadata: false });
+    expect(result).toContain("[Example](https://example.com)");
+  });
+
+  test("<ac:structured-macro>形式のtocマクロは除去される", () => {
+    const html = `<p>before</p>
+      <ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">2</ac:parameter></ac:structured-macro>
+      <p>after</p>`;
+    const result = cleanConfluenceHtml(html, { removeMetadata: false });
+    expect(result).toContain("before");
+    expect(result).toContain("after");
+    expect(result).not.toContain("maxLevel");
+  });
+});
+
+describe("Confluence名前空間タグ（layout/image/time）", () => {
+  test("<ac:layout>はラッパーを剥がして中身を保持", () => {
+    const html = `<ac:layout>
+      <ac:layout-section>
+        <ac:layout-cell><p>Left</p></ac:layout-cell>
+        <ac:layout-cell><p>Right</p></ac:layout-cell>
+      </ac:layout-section>
+    </ac:layout>`;
+    const result = cleanConfluenceHtml(html, { removeMetadata: false });
+    expect(result).toContain("Left");
+    expect(result).toContain("Right");
+    expect(result).not.toContain("ac:layout");
+  });
+
+  test("<ac:image>のattachmentをMarkdown画像に変換", () => {
+    const html = `<p>
+      <ac:image ac:width="100">
+        <ri:attachment ri:filename="sample.png" />
+      </ac:image>
+    </p>`;
+    const result = cleanConfluenceHtml(html, { removeMetadata: false });
+    expect(result).toContain("![sample.png](attachment:sample.png)");
+  });
+
+  test("<time datetime>を文字列として保持", () => {
+    const html = `<p>撮影日<time datetime="2025-03-18" />&nbsp;</p>`;
+    const result = cleanConfluenceHtml(html, { removeMetadata: false });
+    expect(result).toContain("2025-03-18");
+  });
+});
+
+describe("大きめの実サンプル（fixture）", () => {
+  test("レイアウト＋マクロ混在HTMLでも主要情報が落ちない", () => {
+    const html = readFileSync(
+      new URL("./__fixtures__/sample-confluence-layout.html", import.meta.url),
+      "utf8",
+    );
+    const md = cleanConfluenceHtml(html, { removeMetadata: false });
+
+    // 目次はノイズなので消える
+    expect(md).not.toContain("maxLevel");
+
+    // new_window_link がリンクとして残る
+    // テーブル内など状況によってはMarkdownリンク化されずHTML<a>が残ることがあるため、
+    // URL自体が落ちないことを最低保証として検証する。
+    expect(md).toContain("https://video.dmm.co.jp/list/");
+
+    // include が「どのページをincludeしたか」分かる形で残る
+    expect(md).toContain("Included page:");
+    expect(md).toContain("Meta");
+    expect(md).toContain("OGP");
+
+    // attachment画像がMarkdown画像として残る
+    expect(md).toContain("attachment:");
+
+    // 日付が落ちない
+    expect(md).toContain("2025-03-18");
   });
 });
