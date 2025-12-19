@@ -26,6 +26,38 @@ services:
     security_opt:
       - no-new-privileges:true
 
+  # Confluence-Content MCP Server
+  confluence-content:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: niro-mcp-confluence-content
+    working_dir: /app/packages/confluence-content
+    command: bun run start
+    volumes:
+      # Mount source code for development
+      - ./packages/confluence-content:/app/packages/confluence-content
+    environment:
+      - NODE_ENV=development
+      # Confluence API credentials (set these in your environment or .env file)
+      - CONFLUENCE_BASE_URL=${CONFLUENCE_BASE_URL:-}
+      - CONFLUENCE_USERNAME=${CONFLUENCE_USERNAME:-}
+      - CONFLUENCE_PASSWORD=${CONFLUENCE_PASSWORD:-}
+      - CONFLUENCE_API_TOKEN=${CONFLUENCE_API_TOKEN:-}
+      - CONFLUENCE_TIMEOUT=${CONFLUENCE_TIMEOUT:-30000}
+    networks:
+      - niro-mcp-network
+    # stdio communication with Claude Desktop
+    stdin_open: true
+    tty: true
+    # Security: read-only root filesystem
+    read_only: true
+    tmpfs:
+      - /tmp
+    # Security: no new privileges
+    security_opt:
+      - no-new-privileges:true
+
 networks:
   niro-mcp-network:
     driver: bridge

@@ -21,7 +21,8 @@ niro-mcp-servers/
 ├── packages/
 │   ├── shared/                      # 共有ロジック
 │   │   └── confluence-cleaner/     # Confluence HTML クリーナー
-│   └── confluence-md/               # Confluence → Markdown 変換 MCP サーバー
+│   ├── confluence-md/               # Confluence → Markdown 変換 MCP サーバー
+│   └── confluence-content/          # Confluence コンテンツ取得 MCP サーバー
 ├── package.json                     # モノレポルート設定
 ├── bunfig.toml                      # Bun 設定
 ├── docker-compose.yml               # Docker Compose 設定
@@ -40,6 +41,17 @@ Confluence の HTML コンテンツをクリーンな Markdown に変換する M
 - Confluence マクロ（info、warning、code など）の展開
 
 詳細は [packages/confluence-md/README.md](packages/confluence-md/README.md) を参照。
+
+### Confluence-Content
+
+Confluence ページのコンテンツを HTML ビュー形式（レンダリング済みHTML）で取得する MCP サーバー。
+
+**主な機能**:
+- ページのレンダリング済みHTMLを取得
+- マクロが展開された状態のHTMLを取得可能
+- ページ情報（ID、タイトル、スペース情報）の取得
+
+詳細は [packages/confluence-content/README.md](packages/confluence-content/README.md) を参照。
 
 ## セットアップ
 
@@ -72,6 +84,22 @@ docker compose build
         "--rm",
         "confluence-md"
       ]
+    },
+    "confluence-content": {
+      "command": "docker",
+      "args": [
+        "compose",
+        "-f",
+        "/path/to/niro-mcp-servers/docker-compose.yml",
+        "run",
+        "--rm",
+        "confluence-content"
+      ],
+      "env": {
+        "CONFLUENCE_BASE_URL": "https://confluence.example.com",
+        "CONFLUENCE_USERNAME": "your-username",
+        "CONFLUENCE_PASSWORD": "your-password"
+      }
     }
   }
 }
@@ -99,6 +127,10 @@ bun run clean
 cd packages/confluence-md
 bun run dev
 
+# confluence-content サーバーを開発モードで起動
+cd packages/confluence-content
+bun run dev
+
 # テスト実行
 bun test
 ```
@@ -108,9 +140,11 @@ bun test
 ```bash
 # サービスを起動
 docker compose up confluence-md
+docker compose up confluence-content
 
 # ログを確認
 docker compose logs -f confluence-md
+docker compose logs -f confluence-content
 
 # サービスを停止
 docker compose down

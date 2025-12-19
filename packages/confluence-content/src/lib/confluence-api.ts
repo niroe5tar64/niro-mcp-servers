@@ -1,0 +1,230 @@
+/**
+ * Confluence API Client
+ *
+ * Confluence REST API へのアクセスを提供するクライアントクラス。
+ * 認証、エラーハンドリング、タイムアウト設定を含みます。
+ */
+
+export interface ConfluencePageView {
+  id: string;
+  title: string;
+  space: {
+    key: string;
+    name: string;
+  };
+  body: {
+    view: {
+      value: string; // レンダリング済みHTML
+      representation: "view";
+    };
+  };
+  _links: {
+    webui: string;
+    self: string;
+  };
+}
+
+export interface ConfluencePageViewResponse {
+  pageInfo: {
+    id: string;
+    title: string;
+    spaceKey: string;
+    spaceName: string;
+    _links: {
+      webui: string;
+      self: string;
+    };
+  };
+  html: string;
+}
+
+export class ConfluenceApiError extends Error {
+  constructor(
+    message: string,
+    public statusCode?: number,
+    public response?: unknown,
+  ) {
+    super(message);
+    this.name = "ConfluenceApiError";
+  }
+}
+
+/**
+ * Confluence API クライアント
+ */
+export class ConfluenceApiClient {
+  private baseUrl: string;
+  private username: string;
+  private password?: string;
+  private apiToken?: string;
+  private timeout: number;
+
+  constructor(options: {
+    baseUrl: string;
+    username: string;
+    password?: string;
+    apiToken?: string;
+    timeout?: number;
+  }) {
+    this.baseUrl = options.baseUrl.replace(/\/$/, ""); // 末尾のスラッシュを削除
+    this.username = options.username;
+    this.password = options.password;
+    this.apiToken = options.apiToken;
+    this.timeout = options.timeout ?? 30000; // デフォルト30秒
+
+    if (!this.password && !this.apiToken) {
+      throw new Error(
+        "Either CONFLUENCE_PASSWORD or CONFLUENCE_API_TOKEN must be provided",
+      );
+    }
+  }
+
+  /**
+   * 認証ヘッダーを生成
+   */
+  private getAuthHeader(): string {
+    if (this.apiToken) {
+      // APIトークンの場合: Basic認証で username:token を使用
+      const credentials = `${this.username}:${this.apiToken}`;
+      return `Basic ${Buffer.from(credentials).toString("base64")}`;
+    } else if (this.password) {
+      // パスワードの場合: Basic認証で username:password を使用
+      const credentials = `${this.username}:${this.password}`;
+      return `Basic ${Buffer.from(credentials).toString("base64")}`;
+    }
+    throw new Error("No authentication method available");
+  }
+
+  /**
+   * HTTPリクエストを実行（タイムアウト付き）
+   */
+  private async fetchWithTimeout(
+    url: string,
+    options: RequestInit,
+  ): Promise<Response> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === "AbortError") {
+        throw new ConfluenceApiError(
+          `Request timeout after ${this.timeout}ms`,
+          408,
+        );
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * ページのHTMLビュー形式を取得
+   *
+   * @param pageId - ページID
+   * @returns ページ情報とレンダリング済みHTML
+   * @throws ConfluenceApiError - APIエラーが発生した場合
+   */
+  async getPageView(pageId: string): Promise<ConfluencePageViewResponse> {
+    const url = `${this.baseUrl}/rest/api/content/${pageId}?expand=body.view`;
+
+    try {
+      const response = await this.fetchWithTimeout(url, {
+        method: "GET",
+        headers: {
+          "Authorization": this.getAuthHeader(),
+          "Accept": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        let errorResponse: unknown;
+
+        try {
+          const errorBody = await response.json();
+          errorResponse = errorBody;
+          if (
+            typeof errorBody === "object" &&
+            errorBody !== null &&
+            "message" in errorBody
+          ) {
+            errorMessage = String(errorBody.message);
+          }
+        } catch {
+          // JSONパースに失敗した場合はデフォルトメッセージを使用
+        }
+
+        throw new ConfluenceApiError(
+          errorMessage,
+          response.status,
+          errorResponse,
+        );
+      }
+
+      const data = (await response.json()) as ConfluencePageView;
+
+      // レスポンス形式を変換
+      return {
+        pageInfo: {
+          id: data.id,
+          title: data.title,
+          spaceKey: data.space.key,
+          spaceName: data.space.name,
+          _links: data._links,
+        },
+        html: data.body.view.value,
+      };
+    } catch (error) {
+      if (error instanceof ConfluenceApiError) {
+        throw error;
+      }
+
+      // ネットワークエラーなどの場合
+      if (error instanceof Error) {
+        throw new ConfluenceApiError(
+          `Network error: ${error.message}`,
+          undefined,
+          error,
+        );
+      }
+
+      throw new ConfluenceApiError("Unknown error occurred", undefined, error);
+    }
+  }
+
+  /**
+   * 環境変数からクライアントインスタンスを作成
+   */
+  static fromEnvironment(): ConfluenceApiClient {
+    const baseUrl = process.env.CONFLUENCE_BASE_URL;
+    const username = process.env.CONFLUENCE_USERNAME;
+    const password = process.env.CONFLUENCE_PASSWORD;
+    const apiToken = process.env.CONFLUENCE_API_TOKEN;
+    const timeout = process.env.CONFLUENCE_TIMEOUT
+      ? parseInt(process.env.CONFLUENCE_TIMEOUT, 10)
+      : undefined;
+
+    if (!baseUrl) {
+      throw new Error("CONFLUENCE_BASE_URL environment variable is required");
+    }
+    if (!username) {
+      throw new Error("CONFLUENCE_USERNAME environment variable is required");
+    }
+
+    return new ConfluenceApiClient({
+      baseUrl,
+      username,
+      password,
+      apiToken,
+      timeout,
+    });
+  }
+}
+
