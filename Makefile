@@ -18,13 +18,13 @@ help:
 
 # Development container commands
 dev-build:
-	docker-compose -f docker-compose.dev.yml build devcontainer
+	docker compose -f docker-compose.dev.yml build devcontainer
 
 dev-up:
-	docker-compose -f docker-compose.dev.yml up -d devcontainer
+	docker compose -f docker-compose.dev.yml up -d devcontainer
 
 dev-down:
-	docker-compose -f docker-compose.dev.yml down
+	docker compose -f docker-compose.dev.yml down
 
 dev-restart: dev-down dev-up
 
@@ -32,14 +32,14 @@ dev-shell:
 	docker exec -it niro-mcp-devcontainer /bin/bash
 
 dev-logs:
-	docker-compose -f docker-compose.dev.yml logs -f devcontainer
+	docker compose -f docker-compose.dev.yml logs -f devcontainer
 
 # MCP server commands
 mcp-up:
-	docker-compose -f docker-compose.dev.yml --profile mcp-servers up -d
+	docker compose -f docker-compose.dev.yml --profile mcp-servers up -d
 
 mcp-down:
-	docker-compose -f docker-compose.dev.yml --profile mcp-servers down
+	docker compose -f docker-compose.dev.yml --profile mcp-servers down
 
 # Development commands (run inside container)
 install:
@@ -53,5 +53,5 @@ build:
 
 # Cleanup
 clean:
-	docker-compose -f docker-compose.dev.yml down -v
+	docker compose -f docker-compose.dev.yml down -v
 	docker system prune -f
