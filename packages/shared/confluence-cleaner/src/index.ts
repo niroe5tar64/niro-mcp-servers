@@ -475,25 +475,38 @@ function normalizeTableCells(html: string): string {
           const $block = $(block);
           // さらにネストされたdiv/pがない場合のみ処理
           if ($block.find("div, p").length === 0) {
-            // 画像やリンクなどのインライン要素が含まれている場合はHTMLを保持
-            const hasInlineElements = $block.find("img, a, strong, em, code, b, i").length > 0;
-            if (hasInlineElements) {
-              // インライン要素を含む場合は、ブロック要素のラッパーを削除して中身を保持
-              // HTML文字列として取得してから置き換える（画像を含む）
+            // 画像が含まれている場合は特別に処理
+            const $images = $block.find("img");
+            if ($images.length > 0) {
+              // 画像を含むブロック要素の場合、画像をHTMLのまま保持してブロック要素のラッパーを削除
               const blockHtml = $block.html() || "";
               if (blockHtml.trim()) {
-                // HTML文字列をそのまま置き換える（cheerioが自動的にパースする）
+                // 画像を含むHTMLをそのまま保持（cheerioがHTML文字列をパースする際に画像が保持される）
                 $block.replaceWith(blockHtml);
               } else {
                 $block.remove();
               }
             } else {
-              // テキストのみの場合はテキストを保持
-              const blockText = $block.text().trim();
-              if (blockText) {
-                $block.replaceWith(blockText);
+              // 画像やリンクなどのインライン要素が含まれている場合はHTMLを保持
+              const hasInlineElements = $block.find("a, strong, em, code, b, i").length > 0;
+              if (hasInlineElements) {
+                // インライン要素を含む場合は、ブロック要素のラッパーを削除して中身を保持
+                // HTML文字列として取得してから置き換える
+                const blockHtml = $block.html() || "";
+                if (blockHtml.trim()) {
+                  // HTML文字列をそのまま置き換える（cheerioが自動的にパースする）
+                  $block.replaceWith(blockHtml);
+                } else {
+                  $block.remove();
+                }
               } else {
-                $block.remove();
+                // テキストのみの場合はテキストを保持
+                const blockText = $block.text().trim();
+                if (blockText) {
+                  $block.replaceWith(blockText);
+                } else {
+                  $block.remove();
+                }
               }
             }
             changed = true;
@@ -501,6 +514,20 @@ function normalizeTableCells(html: string): string {
           }
         });
       }
+      
+      // 画像をMarkdown形式に事前変換（Turndownが処理する前に確実に保持するため）
+      $cell.find("img").each((_, img) => {
+        const $img = $(img);
+        const src = $img.attr("src") || "";
+        const alt = $img.attr("alt") || "";
+        if (src) {
+          // Markdown形式に変換: ![alt](src)
+          // ただし、Turndownがこれをさらに処理しないように、HTMLコメントとして一時的に保持
+          // その後、Turndownが処理する際にMarkdown形式として認識される
+          const markdown = `![${alt}](${src})`;
+          $img.replaceWith(markdown);
+        }
+      });
       
       // リスト（ul, ol）をテキストに変換
       $cell.find("ul, ol").each((_, list) => {
