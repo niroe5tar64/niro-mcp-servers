@@ -8,14 +8,14 @@
 export interface ConfluencePageView {
   id: string;
   title: string;
-  space: {
+  space?: {
     key: string;
     name: string;
   };
   body: {
     view: {
       value: string; // レンダリング済みHTML
-      representation: "view";
+      representation: string;
     };
   };
   _links: {
@@ -84,9 +84,8 @@ export class ConfluenceApiClient {
    */
   private getAuthHeader(): string {
     if (this.apiToken) {
-      // APIトークンの場合: Basic認証で username:token を使用
-      const credentials = `${this.username}:${this.apiToken}`;
-      return `Basic ${Buffer.from(credentials).toString("base64")}`;
+      // APIトークンの場合: Bearer認証を使用
+      return `Bearer ${this.apiToken}`;
     } else if (this.password) {
       // パスワードの場合: Basic認証で username:password を使用
       const credentials = `${this.username}:${this.password}`;
@@ -125,6 +124,40 @@ export class ConfluenceApiClient {
   }
 
   /**
+   * レスポンスボディをタイムアウト付きで読み取る
+   */
+  private async readResponseWithTimeout<T>(
+    response: Response,
+    parser: (text: string) => T,
+  ): Promise<T> {
+    // タイムアウト用のPromise
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        reject(
+          new ConfluenceApiError(
+            `Response body read timeout after ${this.timeout}ms`,
+            408,
+          ),
+        );
+      }, this.timeout);
+    });
+
+    // レスポンスボディの読み取りとタイムアウトを競争させる
+    try {
+      const text = await Promise.race([
+        response.text(),
+        timeoutPromise,
+      ]);
+      return parser(text);
+    } catch (error) {
+      if (error instanceof ConfluenceApiError) {
+        throw error;
+      }
+      throw error;
+    }
+  }
+
+  /**
    * ページのHTMLビュー形式を取得
    *
    * @param pageId - ページID
@@ -132,7 +165,7 @@ export class ConfluenceApiClient {
    * @throws ConfluenceApiError - APIエラーが発生した場合
    */
   async getPageView(pageId: string): Promise<ConfluencePageViewResponse> {
-    const url = `${this.baseUrl}/rest/api/content/${pageId}?expand=body.view`;
+    const url = `${this.baseUrl}/rest/api/content/${pageId}?expand=body.view,space`;
 
     try {
       const response = await this.fetchWithTimeout(url, {
@@ -148,7 +181,10 @@ export class ConfluenceApiClient {
         let errorResponse: unknown;
 
         try {
-          const errorBody = await response.json();
+          const errorBody = await this.readResponseWithTimeout(
+            response,
+            (text) => JSON.parse(text),
+          );
           errorResponse = errorBody;
           if (
             typeof errorBody === "object" &&
@@ -168,15 +204,18 @@ export class ConfluenceApiClient {
         );
       }
 
-      const data = (await response.json()) as ConfluencePageView;
+      const data = (await this.readResponseWithTimeout(
+        response,
+        (text) => JSON.parse(text) as ConfluencePageView,
+      )) as ConfluencePageView;
 
       // レスポンス形式を変換
       return {
         pageInfo: {
           id: data.id,
           title: data.title,
-          spaceKey: data.space.key,
-          spaceName: data.space.name,
+          spaceKey: data.space?.key || "",
+          spaceName: data.space?.name || "",
           _links: data._links,
         },
         html: data.body.view.value,
