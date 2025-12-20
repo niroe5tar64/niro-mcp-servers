@@ -21,7 +21,6 @@ niro-mcp-servers/
 ├── packages/
 │   ├── shared/                      # 共有ロジック
 │   │   └── confluence-cleaner/     # Confluence HTML クリーナー
-│   ├── confluence-md/               # Confluence → Markdown 変換 MCP サーバー
 │   └── confluence-content/          # Confluence コンテンツ取得 MCP サーバー
 ├── package.json                     # モノレポルート設定
 ├── bunfig.toml                      # Bun 設定
@@ -31,24 +30,15 @@ niro-mcp-servers/
 
 ## MCP サーバー一覧
 
-### Confluence-MD
+### Confluence-Content
 
-Confluence の HTML コンテンツをクリーンな Markdown に変換する MCP サーバー。
+Confluence ページのコンテンツを取得し、Markdown形式に変換する MCP サーバー。
 
 **主な機能**:
+- ページIDからレンダリング済みHTMLを取得
 - HTML ノイズを除去し、LLM が理解しやすい Markdown に変換
 - トークン削減: 約 50%
 - Confluence マクロ（info、warning、code など）の展開
-
-詳細は [packages/confluence-md/README.md](packages/confluence-md/README.md) を参照。
-
-### Confluence-Content
-
-Confluence ページのコンテンツを HTML ビュー形式（レンダリング済みHTML）で取得する MCP サーバー。
-
-**主な機能**:
-- ページのレンダリング済みHTMLを取得
-- マクロが展開された状態のHTMLを取得可能
 - ページ情報（ID、タイトル、スペース情報）の取得
 
 詳細は [packages/confluence-content/README.md](packages/confluence-content/README.md) を参照。
@@ -74,17 +64,6 @@ docker compose build
 ```json
 {
   "mcpServers": {
-    "confluence-md": {
-      "command": "docker",
-      "args": [
-        "compose",
-        "-f",
-        "/path/to/niro-mcp-servers/docker-compose.yml",
-        "run",
-        "--rm",
-        "confluence-md"
-      ]
-    },
     "confluence-content": {
       "command": "docker",
       "args": [
@@ -123,10 +102,6 @@ bun run clean
 ### 個別パッケージの開発
 
 ```bash
-# confluence-md サーバーを開発モードで起動
-cd packages/confluence-md
-bun run dev
-
 # confluence-content サーバーを開発モードで起動
 cd packages/confluence-content
 bun run dev
@@ -139,11 +114,9 @@ bun test
 
 ```bash
 # サービスを起動
-docker compose up confluence-md
 docker compose up confluence-content
 
 # ログを確認
-docker compose logs -f confluence-md
 docker compose logs -f confluence-content
 
 # サービスを停止

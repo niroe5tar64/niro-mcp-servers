@@ -26,29 +26,6 @@ services:
     stdin_open: true
     tty: true
 
-  # Confluence-MD MCP Server (can be started separately for testing)
-  confluence-md:
-    extends:
-      file: docker-compose.yml
-      service: confluence-md
-    # Override command for development mode with hot reload
-    command: bun run dev
-    # Enable HTTP transport for easier testing from DevContainer
-    environment:
-      - NODE_ENV=development
-      - TRANSPORT_MODE=http
-      - PORT=50301
-      - HOST=0.0.0.0
-    # Expose port for HTTP access
-    ports:
-      - "50301:50301"
-    # Disable read-only for development
-    read_only: false
-    networks:
-      - niro-mcp-network
-    profiles:
-      - mcp-servers
-
   # Confluence-Content MCP Server (can be started separately for testing)
   confluence-content:
     extends:
