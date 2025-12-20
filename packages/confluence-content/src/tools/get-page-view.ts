@@ -70,12 +70,26 @@ export async function handleGetPageView(
     // ページのHTMLビュー形式を取得
     const result = await client.getPageView(args.pageId.trim());
 
+    // レスポンスサイズと形式をログ出力
+    const htmlSize = result.html.length;
+    const jsonString = JSON.stringify(result, null, 2);
+    const responseSize = jsonString.length;
+    const responseSizeKB = (responseSize / 1024).toFixed(2);
+    const responseSizeMB = (responseSize / (1024 * 1024)).toFixed(2);
+
+    console.error(`[get_confluence_page_view] Page ID: ${args.pageId.trim()}`);
+    console.error(`[get_confluence_page_view] HTML size: ${htmlSize} bytes (${(htmlSize / 1024).toFixed(2)} KB)`);
+    console.error(`[get_confluence_page_view] Response size: ${responseSize} bytes (${responseSizeKB} KB, ${responseSizeMB} MB)`);
+    console.error(`[get_confluence_page_view] Response format: content array with ${1} item(s)`);
+    console.error(`[get_confluence_page_view] Content type: text`);
+    console.error(`[get_confluence_page_view] Content text length: ${jsonString.length} bytes`);
+
     // JSON形式でレスポンスを返す
     return {
       content: [
         {
           type: "text",
-          text: JSON.stringify(result, null, 2),
+          text: jsonString,
         },
       ],
     };
