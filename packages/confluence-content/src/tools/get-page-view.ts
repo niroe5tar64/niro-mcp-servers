@@ -6,11 +6,11 @@
  */
 
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
+import { cleanConfluenceHtml } from "@niro-mcp/confluence-cleaner";
 import {
   ConfluenceApiClient,
   ConfluenceApiError,
 } from "../lib/confluence-api.js";
-import { cleanConfluenceHtml } from "@niro-mcp/confluence-cleaner";
 
 /**
  * ツール定義
@@ -90,7 +90,7 @@ export async function handleGetPageView(args: GetPageViewArgs): Promise<{
     const responseSize = jsonString.length;
     const responseSizeKB = (responseSize / 1024).toFixed(2);
     const responseSizeMB = (responseSize / (1024 * 1024)).toFixed(2);
-    const reduction = ((htmlSize - markdownSize) / htmlSize * 100).toFixed(2);
+    const reduction = (((htmlSize - markdownSize) / htmlSize) * 100).toFixed(2);
 
     console.error(`[get_confluence_page_view] Page ID: ${args.pageId.trim()}`);
     console.error(
@@ -99,9 +99,7 @@ export async function handleGetPageView(args: GetPageViewArgs): Promise<{
     console.error(
       `[get_confluence_page_view] Markdown size: ${markdownSize} bytes (${(markdownSize / 1024).toFixed(2)} KB)`,
     );
-    console.error(
-      `[get_confluence_page_view] Size reduction: ${reduction}%`,
-    );
+    console.error(`[get_confluence_page_view] Size reduction: ${reduction}%`);
     console.error(
       `[get_confluence_page_view] Response size: ${responseSize} bytes (${responseSizeKB} KB, ${responseSizeMB} MB)`,
     );

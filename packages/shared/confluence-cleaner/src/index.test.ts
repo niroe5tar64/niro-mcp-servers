@@ -208,7 +208,6 @@ describe("cleanConfluenceHtml", () => {
   });
 });
 
-
 describe("レンダリング後のConfluence HTML処理", () => {
   describe("PlantUML SVG → Mermaid変換", () => {
     test("シンプルなSVGグラフをMermaidに変換", () => {
@@ -450,7 +449,6 @@ describe("エラーハンドリング", () => {
     expect(typeof result).toBe("string");
   });
 });
-
 
 describe("大きめの実サンプル（fixture）", () => {
   test("page-2570547984.html: レイアウト＋SVG画像の変換", () => {

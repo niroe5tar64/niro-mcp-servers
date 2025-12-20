@@ -642,17 +642,14 @@ function convertRemainingHtmlTables(markdown: string): string {
     // cheerioの.html()がコードブロック内の`>`を`&gt;`にエスケープするため、
     // コードブロック内のHTMLエンティティをデコード
     // 正規表現で```で囲まれたコードブロックを検出し、その中の&gt;を>に戻す
-    bodyContent = bodyContent.replace(
-      /(```[\s\S]*?```)/g,
-      (match) => {
-        return match
-          .replace(/&gt;/g, ">")
-          .replace(/&lt;/g, "<")
-          .replace(/&amp;/g, "&")
-          .replace(/&quot;/g, '"')
-          .replace(/&#039;/g, "'");
-      }
-    );
+    bodyContent = bodyContent.replace(/(```[\s\S]*?```)/g, (match) => {
+      return match
+        .replace(/&gt;/g, ">")
+        .replace(/&lt;/g, "<")
+        .replace(/&amp;/g, "&")
+        .replace(/&quot;/g, '"')
+        .replace(/&#039;/g, "'");
+    });
 
     return bodyContent || markdown;
   } catch (error) {
