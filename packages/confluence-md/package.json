@@ -15,6 +15,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "@niro-mcp/confluence-cleaner": "workspace:*",
+    "@niro-mcp/mcp-server-core": "workspace:*",
     "cheerio": "^1.0.0"
   },
   "devDependencies": {

@@ -14,11 +14,13 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
  * HTTP トランスポートでサーバーを起動
  *
  * @param server - MCPサーバーインスタンス
+ * @param serverName - サーバー名（ヘルスチェックとログに使用）
  * @param port - リッスンするポート番号
  * @param host - リッスンするホスト（例: "0.0.0.0"）
  */
 export async function startHttpTransport(
   server: Server,
+  serverName: string,
   port: number,
   host: string,
 ): Promise<void> {
@@ -39,7 +41,7 @@ export async function startHttpTransport(
     // サーバーが正常に動作しているか確認するために使用
     if (url.pathname === "/health") {
       res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ status: "ok", server: "confluence-md" }));
+      res.end(JSON.stringify({ status: "ok", server: serverName }));
       return;
     }
 
@@ -107,7 +109,7 @@ export async function startHttpTransport(
 
   // サーバーを起動
   httpServer.listen(port, host, () => {
-    console.error(`Confluence-MD MCP Server running on http://${host}:${port}`);
+    console.error(`${serverName} MCP Server running on http://${host}:${port}`);
     console.error(`Health check: http://${host}:${port}/health`);
     console.error(`MCP endpoint: http://${host}:${port}/mcp`);
   });

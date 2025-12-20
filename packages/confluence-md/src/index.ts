@@ -10,9 +10,11 @@
  * MCPサーバーを起動します。
  */
 
+import {
+  startHttpTransport,
+  startStdioTransport,
+} from "@niro-mcp/mcp-server-core/transports";
 import { createMcpServer } from "./server.js";
-import { startHttpTransport } from "./transports/http.js";
-import { startStdioTransport } from "./transports/stdio.js";
 
 /**
  * メインエントリーポイント
@@ -32,10 +34,10 @@ async function main() {
     // HTTPモード: リモートクライアントからアクセス可能
     const port = Number.parseInt(process.env.PORT || "50301", 10);
     const host = process.env.HOST || "0.0.0.0";
-    await startHttpTransport(server, port, host);
+    await startHttpTransport(server, "Confluence-MD", port, host);
   } else {
     // Stdioモード: Claude Desktopなどのローカルクライアント用
-    await startStdioTransport(server);
+    await startStdioTransport(server, "Confluence-MD");
   }
 }
 

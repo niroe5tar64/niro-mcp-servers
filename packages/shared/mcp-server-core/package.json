@@ -1,0 +1,24 @@
+{
+  "name": "@niro-mcp/mcp-server-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MCP server core functionality (transports and common utilities)",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./transports": "./src/transports/index.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.5",
+    "@types/node": "^22.10.5",
+    "typescript": "^5.9.3"
+  }
+}

@@ -12,9 +12,13 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
  * Stdio トランスポートでサーバーを起動
  *
  * @param server - MCPサーバーインスタンス
+ * @param serverName - サーバー名（ログに使用）
  */
-export async function startStdioTransport(server: Server): Promise<void> {
+export async function startStdioTransport(
+  server: Server,
+  serverName: string,
+): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("Confluence-MD MCP Server running on stdio");
+  console.error(`${serverName} MCP Server running on stdio`);
 }

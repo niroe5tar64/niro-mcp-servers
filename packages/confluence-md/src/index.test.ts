@@ -195,7 +195,7 @@ describe("Confluence-MD MCP Server Integration Tests", () => {
       const data = await response.json();
       expect(data).toEqual({
         status: "ok",
-        server: "confluence-md",
+        server: "Confluence-MD",
       });
     });
   });
