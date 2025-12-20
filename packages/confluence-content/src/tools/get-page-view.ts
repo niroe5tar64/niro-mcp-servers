@@ -1,7 +1,8 @@
 /**
  * Get Confluence Page View Tool
  *
- * ConfluenceページのHTMLビュー形式（レンダリング済みHTML）を取得するMCPツール。
+ * ConfluenceページのHTMLビュー形式（レンダリング済みHTML）を取得し、
+ * クリーンアップしたMarkdown形式に変換するMCPツール。
  */
 
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
@@ -9,6 +10,7 @@ import {
   ConfluenceApiClient,
   ConfluenceApiError,
 } from "../lib/confluence-api.js";
+import { cleanConfluenceHtml } from "@niro-mcp/confluence-cleaner";
 
 /**
  * ツール定義
@@ -17,7 +19,7 @@ import {
 export const getPageViewTool: Tool = {
   name: "get_confluence_page_view",
   description:
-    "Get Confluence page content in HTML view format (rendered HTML). Returns page information and rendered HTML content.",
+    "Get Confluence page content in Markdown format. Returns page information and cleaned Markdown content converted from rendered HTML.",
   inputSchema: {
     type: "object",
     properties: {
@@ -39,10 +41,10 @@ export interface GetPageViewArgs {
 
 /**
  * ツールハンドラー
- * ConfluenceページのHTMLビュー形式を取得します
+ * ConfluenceページのHTMLビュー形式を取得してMarkdownに変換します
  *
  * @param args - ツールの引数
- * @returns ページ情報とレンダリング済みHTML
+ * @returns ページ情報とクリーンアップされたMarkdownコンテンツ
  */
 export async function handleGetPageView(args: GetPageViewArgs): Promise<{
   content: Array<{ type: "text"; text: string }>;
@@ -68,16 +70,37 @@ export async function handleGetPageView(args: GetPageViewArgs): Promise<{
     // ページのHTMLビュー形式を取得
     const result = await client.getPageView(args.pageId.trim());
 
+    // HTMLをMarkdownに変換
+    const markdown = cleanConfluenceHtml(result.html, {
+      removeMetadata: true,
+      expandMacros: true,
+      convertTables: true,
+    });
+
+    // レスポンスオブジェクトを作成
+    const response = {
+      pageInfo: result.pageInfo,
+      markdown,
+    };
+
     // レスポンスサイズと形式をログ出力
     const htmlSize = result.html.length;
-    const jsonString = JSON.stringify(result, null, 2);
+    const markdownSize = markdown.length;
+    const jsonString = JSON.stringify(response, null, 2);
     const responseSize = jsonString.length;
     const responseSizeKB = (responseSize / 1024).toFixed(2);
     const responseSizeMB = (responseSize / (1024 * 1024)).toFixed(2);
+    const reduction = ((htmlSize - markdownSize) / htmlSize * 100).toFixed(2);
 
     console.error(`[get_confluence_page_view] Page ID: ${args.pageId.trim()}`);
     console.error(
       `[get_confluence_page_view] HTML size: ${htmlSize} bytes (${(htmlSize / 1024).toFixed(2)} KB)`,
+    );
+    console.error(
+      `[get_confluence_page_view] Markdown size: ${markdownSize} bytes (${(markdownSize / 1024).toFixed(2)} KB)`,
+    );
+    console.error(
+      `[get_confluence_page_view] Size reduction: ${reduction}%`,
     );
     console.error(
       `[get_confluence_page_view] Response size: ${responseSize} bytes (${responseSizeKB} KB, ${responseSizeMB} MB)`,

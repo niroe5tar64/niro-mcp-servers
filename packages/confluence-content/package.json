@@ -13,7 +13,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@niro-mcp/confluence-cleaner": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "^1.3.5",
