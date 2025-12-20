@@ -7,7 +7,10 @@
   "scripts": {
     "build": "bun run --filter '*' build",
     "test": "bun test",
-    "clean": "bun run --filter '*' clean"
+    "clean": "bun run --filter '*' clean",
+    "format": "biome format --write .",
+    "lint": "biome lint --write .",
+    "check": "biome check --write ."
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
