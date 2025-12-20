@@ -114,4 +114,3 @@ export async function startHttpTransport(
     console.error(`MCP endpoint: http://${host}:${port}/mcp`);
   });
 }
-

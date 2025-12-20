@@ -4,7 +4,7 @@
  * ツールロジックの単体テスト。サーバー起動不要で高速に実行できます。
  */
 
-import { describe, expect, test, beforeEach, afterEach } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import {
   type GetPageViewArgs,
   getPageViewTool,
@@ -93,7 +93,7 @@ describe("Get Page View Tool", () => {
 
     describe("環境変数エラー", () => {
       test("CONFLUENCE_BASE_URLが未設定の場合、エラーを返す", async () => {
-        delete process.env.CONFLUENCE_BASE_URL;
+        process.env.CONFLUENCE_BASE_URL = undefined;
 
         const args: GetPageViewArgs = {
           pageId: "123",
@@ -106,7 +106,7 @@ describe("Get Page View Tool", () => {
       });
 
       test("CONFLUENCE_USERNAMEが未設定の場合、エラーを返す", async () => {
-        delete process.env.CONFLUENCE_USERNAME;
+        process.env.CONFLUENCE_USERNAME = undefined;
 
         const args: GetPageViewArgs = {
           pageId: "123",
@@ -119,8 +119,8 @@ describe("Get Page View Tool", () => {
       });
 
       test("認証情報が両方未設定の場合、エラーを返す", async () => {
-        delete process.env.CONFLUENCE_PASSWORD;
-        delete process.env.CONFLUENCE_API_TOKEN;
+        process.env.CONFLUENCE_PASSWORD = undefined;
+        process.env.CONFLUENCE_API_TOKEN = undefined;
 
         const args: GetPageViewArgs = {
           pageId: "123",
@@ -153,4 +153,3 @@ describe("Get Page View Tool", () => {
     });
   });
 });
-

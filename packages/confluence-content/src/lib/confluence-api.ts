@@ -86,7 +86,8 @@ export class ConfluenceApiClient {
     if (this.apiToken) {
       // APIトークンの場合: Bearer認証を使用
       return `Bearer ${this.apiToken}`;
-    } else if (this.password) {
+    }
+    if (this.password) {
       // パスワードの場合: Basic認証で username:password を使用
       const credentials = `${this.username}:${this.password}`;
       return `Basic ${Buffer.from(credentials).toString("base64")}`;
@@ -144,10 +145,7 @@ export class ConfluenceApiClient {
 
     // レスポンスボディの読み取りとタイムアウトを競争させる
     try {
-      const text = await Promise.race([
-        response.text(),
-        timeoutPromise,
-      ]);
+      const text = await Promise.race([response.text(), timeoutPromise]);
       return parser(text);
     } catch (error) {
       if (error instanceof ConfluenceApiError) {
@@ -171,8 +169,8 @@ export class ConfluenceApiClient {
       const response = await this.fetchWithTimeout(url, {
         method: "GET",
         headers: {
-          "Authorization": this.getAuthHeader(),
-          "Accept": "application/json",
+          Authorization: this.getAuthHeader(),
+          Accept: "application/json",
         },
       });
 
@@ -247,7 +245,7 @@ export class ConfluenceApiClient {
     const password = process.env.CONFLUENCE_PASSWORD;
     const apiToken = process.env.CONFLUENCE_API_TOKEN;
     const timeout = process.env.CONFLUENCE_TIMEOUT
-      ? parseInt(process.env.CONFLUENCE_TIMEOUT, 10)
+      ? Number.parseInt(process.env.CONFLUENCE_TIMEOUT, 10)
       : undefined;
 
     if (!baseUrl) {
@@ -266,4 +264,3 @@ export class ConfluenceApiClient {
     });
   }
 }
-

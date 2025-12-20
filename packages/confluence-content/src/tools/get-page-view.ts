@@ -44,9 +44,7 @@ export interface GetPageViewArgs {
  * @param args - ツールの引数
  * @returns ページ情報とレンダリング済みHTML
  */
-export async function handleGetPageView(
-  args: GetPageViewArgs,
-): Promise<{
+export async function handleGetPageView(args: GetPageViewArgs): Promise<{
   content: Array<{ type: "text"; text: string }>;
   isError?: boolean;
 }> {
@@ -78,11 +76,19 @@ export async function handleGetPageView(
     const responseSizeMB = (responseSize / (1024 * 1024)).toFixed(2);
 
     console.error(`[get_confluence_page_view] Page ID: ${args.pageId.trim()}`);
-    console.error(`[get_confluence_page_view] HTML size: ${htmlSize} bytes (${(htmlSize / 1024).toFixed(2)} KB)`);
-    console.error(`[get_confluence_page_view] Response size: ${responseSize} bytes (${responseSizeKB} KB, ${responseSizeMB} MB)`);
-    console.error(`[get_confluence_page_view] Response format: content array with ${1} item(s)`);
-    console.error(`[get_confluence_page_view] Content type: text`);
-    console.error(`[get_confluence_page_view] Content text length: ${jsonString.length} bytes`);
+    console.error(
+      `[get_confluence_page_view] HTML size: ${htmlSize} bytes (${(htmlSize / 1024).toFixed(2)} KB)`,
+    );
+    console.error(
+      `[get_confluence_page_view] Response size: ${responseSize} bytes (${responseSizeKB} KB, ${responseSizeMB} MB)`,
+    );
+    console.error(
+      `[get_confluence_page_view] Response format: content array with ${1} item(s)`,
+    );
+    console.error("[get_confluence_page_view] Content type: text");
+    console.error(
+      `[get_confluence_page_view] Content text length: ${jsonString.length} bytes`,
+    );
 
     // JSON形式でレスポンスを返す
     return {
@@ -135,4 +141,3 @@ export async function handleGetPageView(
     };
   }
 }
-

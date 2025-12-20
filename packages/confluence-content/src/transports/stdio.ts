@@ -18,4 +18,3 @@ export async function startStdioTransport(server: Server): Promise<void> {
   await server.connect(transport);
   console.error("Confluence-Content MCP Server running on stdio");
 }
-

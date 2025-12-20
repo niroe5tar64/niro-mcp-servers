@@ -71,4 +71,3 @@ export function createMcpServer(): Server {
 
   return server;
 }
-

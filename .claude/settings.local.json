@@ -4,9 +4,7 @@
     "allowUnsandboxedCommands": true
   },
   "permissions": {
-    "allow": [
-      "*"
-    ],
+    "allow": ["*"],
     "deny": [
       "Bash(rm -rf /)",
       "Bash(rm -r -f /)",

@@ -4,11 +4,8 @@
  * APIクライアントの単体テスト。
  */
 
-import { describe, expect, test, beforeEach, afterEach } from "bun:test";
-import {
-  ConfluenceApiClient,
-  ConfluenceApiError,
-} from "./confluence-api.js";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { ConfluenceApiClient, ConfluenceApiError } from "./confluence-api.js";
 
 describe("ConfluenceApiClient", () => {
   describe("コンストラクタ", () => {
@@ -85,7 +82,7 @@ describe("ConfluenceApiClient", () => {
     });
 
     test("CONFLUENCE_BASE_URLが未設定の場合、エラーをスロー", () => {
-      delete process.env.CONFLUENCE_BASE_URL;
+      process.env.CONFLUENCE_BASE_URL = undefined;
       process.env.CONFLUENCE_USERNAME = "testuser";
       process.env.CONFLUENCE_PASSWORD = "testpass";
 
@@ -96,7 +93,7 @@ describe("ConfluenceApiClient", () => {
 
     test("CONFLUENCE_USERNAMEが未設定の場合、エラーをスロー", () => {
       process.env.CONFLUENCE_BASE_URL = "https://confluence.example.com";
-      delete process.env.CONFLUENCE_USERNAME;
+      process.env.CONFLUENCE_USERNAME = undefined;
       process.env.CONFLUENCE_PASSWORD = "testpass";
 
       expect(() => {
@@ -135,4 +132,3 @@ describe("ConfluenceApiClient", () => {
     });
   });
 });
-

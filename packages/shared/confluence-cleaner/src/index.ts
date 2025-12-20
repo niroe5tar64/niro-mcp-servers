@@ -95,26 +95,29 @@ export function cleanConfluenceHtml(
   } = options;
 
   try {
+    // ローカル変数を使用してパラメータの再代入を避ける
+    let cleanedHtml = html;
+
     // メタデータ除去が有効な場合は、不要な属性を削除
     if (removeMetadata) {
-      html = removeConfluenceMetadata(html);
+      cleanedHtml = removeConfluenceMetadata(cleanedHtml);
     }
 
     // Confluenceマクロの展開
     if (expandMacros) {
-      html = expandConfluenceMacros(html);
+      cleanedHtml = expandConfluenceMacros(cleanedHtml);
     }
 
     // テーブル変換が有効な場合、テーブルセル内のブロック要素を正規化
     if (convertTables) {
-      html = normalizeTableCells(html);
+      cleanedHtml = normalizeTableCells(cleanedHtml);
     }
 
     // TurndownServiceのインスタンスを取得（キャッシュ付き）
     const turndownService = getTurndownService(convertTables);
 
     // HTML → Markdown変換
-    let markdown = turndownService.turndown(html);
+    let markdown = turndownService.turndown(cleanedHtml);
 
     // TurndownがエスケープしたMarkdown構文を解除
     // テーブルセル内の画像構文（!\[...\](...)）を正規化
@@ -460,7 +463,7 @@ export function expandMacro(
 
 /**
  * テーブルセル内のブロック要素を正規化して、Markdownテーブル変換を可能にする
- * 
+ *
  * Markdownテーブルはインライン要素のみをサポートするため、
  * セル内のdiv、p、ulなどのブロック要素を処理する必要がある
  */
@@ -473,7 +476,7 @@ function normalizeTableCells(html: string): string {
     // テーブルセル（td, th）を処理
     $("td, th").each((_, cell) => {
       const $cell = $(cell);
-      
+
       // ブロック要素（div, p）を削除して、中身を直接セルに移動
       // 画像やリンクなどのインライン要素は保持
       // 注意: ネストされたdiv/pも処理するため、外側から内側へ処理
@@ -497,7 +500,8 @@ function normalizeTableCells(html: string): string {
               }
             } else {
               // 画像やリンクなどのインライン要素が含まれている場合はHTMLを保持
-              const hasInlineElements = $block.find("a, strong, em, code, b, i").length > 0;
+              const hasInlineElements =
+                $block.find("a, strong, em, code, b, i").length > 0;
               if (hasInlineElements) {
                 // インライン要素を含む場合は、ブロック要素のラッパーを削除して中身を保持
                 // HTML文字列として取得してから置き換える
@@ -523,7 +527,7 @@ function normalizeTableCells(html: string): string {
           }
         });
       }
-      
+
       // 画像をMarkdown形式に事前変換（Turndownが処理する前に確実に保持するため）
       $cell.find("img").each((_, img) => {
         const $img = $(img);
@@ -537,7 +541,7 @@ function normalizeTableCells(html: string): string {
           $img.replaceWith(markdown);
         }
       });
-      
+
       // リスト（ul, ol）をテキストに変換
       $cell.find("ul, ol").each((_, list) => {
         const $list = $(list);
@@ -554,7 +558,7 @@ function normalizeTableCells(html: string): string {
           $list.remove();
         }
       });
-      
+
       // 空のbrタグを削除
       $cell.find("br").each((_, br) => {
         const $br = $(br);
@@ -565,7 +569,7 @@ function normalizeTableCells(html: string): string {
           $br.remove();
         }
       });
-      
+
       // 空の要素を削除
       $cell.find("*").each((_, elem) => {
         const $elem = $(elem);
@@ -573,7 +577,7 @@ function normalizeTableCells(html: string): string {
           $elem.remove();
         }
       });
-      
+
       // テキストノードの前後の空白を整理
       $cell.contents().each((_, node) => {
         if (node.type === "text") {
@@ -607,7 +611,8 @@ function unescapeCloseParen(text: string): string {
   let result = text;
   let index = result.indexOf(escaped);
   while (index !== -1) {
-    result = result.substring(0, index) + closeParen + result.substring(index + 2);
+    result =
+      result.substring(0, index) + closeParen + result.substring(index + 2);
     index = result.indexOf(escaped, index + 1);
   }
   return result;
@@ -621,19 +626,19 @@ function unescapeMarkdownInTables(markdown: string): string {
   // テーブルセル内のエスケープされた画像構文を解除
   // !\[...\](...) を ![...](...) に変換
   // Bunのパーサーが誤検出するため、正規表現リテラルを使わずに実装
-  let result = markdown;
-  
+  const result = markdown;
+
   // テーブル行を行ごとに処理
-  const lines = result.split('\n');
-  const processedLines = lines.map(line => {
+  const lines = result.split("\n");
+  const processedLines = lines.map((line) => {
     // テーブル行（| で始まる行）のみを処理
-    if (!line.trim().startsWith('|')) {
+    if (!line.trim().startsWith("|")) {
       return line;
     }
-    
+
     // エスケープされた画像構文を解除（正規表現を使わずに文字列置換）
     let processed = line;
-    
+
     // !\[  -> ![ を文字列置換で処理
     const exclamation = String.fromCharCode(33);
     const backslash = String.fromCharCode(92);
@@ -643,7 +648,7 @@ function unescapeMarkdownInTables(markdown: string): string {
     while (processed.includes(escapedImageStart)) {
       processed = processed.replace(escapedImageStart, imageStart);
     }
-    
+
     // \](  -> ]( を文字列置換で処理
     const closeBracket = String.fromCharCode(93);
     const openParen = String.fromCharCode(40);
@@ -652,31 +657,31 @@ function unescapeMarkdownInTables(markdown: string): string {
     while (processed.includes(escapedImageMiddle)) {
       processed = processed.replace(escapedImageMiddle, imageMiddle);
     }
-    
+
     // \) を ) に変換
     const closeParen = String.fromCharCode(41);
     const escapedCloseParen = backslash + closeParen;
     while (processed.includes(escapedCloseParen)) {
       processed = processed.replace(escapedCloseParen, closeParen);
     }
-    
+
     // 画像構文内のaltテキストやURL内の角括弧のエスケープを解除
     // \[ を [ に変換（画像構文の構造部分以外）
     const escapedOpenBracket = backslash + openBracket;
     while (processed.includes(escapedOpenBracket)) {
       processed = processed.replace(escapedOpenBracket, openBracket);
     }
-    
+
     // \] を ] に変換（画像構文の構造部分以外）
     const escapedCloseBracket = backslash + closeBracket;
     while (processed.includes(escapedCloseBracket)) {
       processed = processed.replace(escapedCloseBracket, closeBracket);
     }
-    
+
     return processed;
   });
-  
-  return processedLines.join('\n');
+
+  return processedLines.join("\n");
 }
 
 /**
@@ -712,13 +717,13 @@ function convertRemainingHtmlTables(markdown: string): string {
               cells.push(cellText);
             });
           if (cells.length > 0) {
-            rows.push("| " + cells.join(" | ") + " |");
+            rows.push(`| ${cells.join(" | ")} |`);
             hasHeader = true;
           }
         });
         // セパレーター行を追加
         if (rows.length > 0) {
-          const separator = "| " + cells.map(() => "---").join(" | ") + " |";
+          const separator = `| ${cells.map(() => "---").join(" | ")} |`;
           rows.push(separator);
         }
       }
@@ -731,15 +736,13 @@ function convertRemainingHtmlTables(markdown: string): string {
       if (!hasHeader && $rows.length > 0) {
         const firstRow = $rows.first();
         const headerCells: string[] = [];
-        firstRow
-          .find("th, td")
-          .each((_, cell) => {
-            const cellText = $(cell).text().trim();
-            headerCells.push(cellText);
-          });
+        firstRow.find("th, td").each((_, cell) => {
+          const cellText = $(cell).text().trim();
+          headerCells.push(cellText);
+        });
         if (headerCells.length > 0) {
-          rows.push("| " + headerCells.join(" | ") + " |");
-          rows.push("| " + headerCells.map(() => "---").join(" | ") + " |");
+          rows.push(`| ${headerCells.join(" | ")} |`);
+          rows.push(`| ${headerCells.map(() => "---").join(" | ")} |`);
         }
         // 最初の行をスキップ
         $rows = $rows.slice(1);
@@ -759,7 +762,7 @@ function convertRemainingHtmlTables(markdown: string): string {
             cells.push(cellText);
           });
         if (cells.length > 0) {
-          rows.push("| " + cells.join(" | ") + " |");
+          rows.push(`| ${cells.join(" | ")} |`);
         }
       });
 

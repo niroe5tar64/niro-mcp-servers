@@ -30,7 +30,7 @@ async function main() {
 
   if (transportMode === "http") {
     // HTTPモード: リモートクライアントからアクセス可能
-    const port = parseInt(process.env.PORT || "50302", 10);
+    const port = Number.parseInt(process.env.PORT || "50302", 10);
     const host = process.env.HOST || "0.0.0.0";
     await startHttpTransport(server, port, host);
   } else {
@@ -44,4 +44,3 @@ main().catch((error) => {
   console.error("Fatal error:", error);
   process.exit(1);
 });
-

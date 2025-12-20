@@ -298,10 +298,10 @@ describe("Confluence Converter Tool", () => {
 
         const result = await handleConvertConfluenceToMarkdown(args);
 
-        result.content.forEach((item) => {
+        for (const item of result.content) {
           expect(item.type).toBe("text");
           expect(item.text).toBeDefined();
-        });
+        }
       });
 
       test("最初のコンテンツアイテムが変換結果である", async () => {

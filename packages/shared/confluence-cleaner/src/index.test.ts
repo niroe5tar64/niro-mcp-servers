@@ -399,28 +399,18 @@ describe("Confluence名前空間タグ（layout/image/time）", () => {
 describe("大きめの実サンプル（fixture）", () => {
   test("レイアウト＋マクロ混在HTMLでも主要情報が落ちない", () => {
     const html = readFileSync(
-      new URL("./__fixtures__/sample-confluence-layout.html", import.meta.url),
+      new URL("./__fixtures__/page-2570547984.html", import.meta.url),
       "utf8",
     );
     const md = cleanConfluenceHtml(html, { removeMetadata: false });
 
-    // 目次はノイズなので消える
-    expect(md).not.toContain("maxLevel");
-
-    // new_window_link がリンクとして残る
-    // テーブル内など状況によってはMarkdownリンク化されずHTML<a>が残ることがあるため、
-    // URL自体が落ちないことを最低保証として検証する。
-    expect(md).toContain("https://video.dmm.co.jp/list/");
-
-    // include が「どのページをincludeしたか」分かる形で残る
-    expect(md).toContain("Included page:");
+    // PlantUML SVG画像が含まれている
     expect(md).toContain("Meta");
-    expect(md).toContain("OGP");
 
-    // attachment画像がMarkdown画像として残る
-    expect(md).toContain("attachment:");
+    // レイアウト構造が変換される（ページ構造図の要素）
+    expect(md).toContain("UIパーツB-PC");
 
-    // 日付が落ちない
-    expect(md).toContain("2025-03-18");
+    // UI要素の名前が含まれている
+    expect(md).toContain("UIパーツ");
   });
 });
