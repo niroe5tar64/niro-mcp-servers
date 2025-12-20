@@ -210,6 +210,123 @@ describe("cleanConfluenceHtml", () => {
 
 
 describe("レンダリング後のConfluence HTML処理", () => {
+  describe("PlantUML SVG → Mermaid変換", () => {
+    test("シンプルなSVGグラフをMermaidに変換", () => {
+      const html = `
+        <span class="plantuml-svg-image">
+          <svg>
+            <g id="node1" class="node">
+              <title>NodeA</title>
+              <text>Node A</text>
+            </g>
+            <g id="node2" class="node">
+              <title>NodeB</title>
+              <text>Node B</text>
+            </g>
+            <g id="edge1" class="edge">
+              <title>NodeA-&gt;NodeB</title>
+            </g>
+          </svg>
+        </span>
+      `;
+      const result = cleanConfluenceHtml(html, { expandMacros: true });
+
+      expect(result).toContain("```mermaid");
+      expect(result).toContain("flowchart LR");
+      expect(result).toContain('node1["Node A"]');
+      expect(result).toContain('node2["Node B"]');
+      expect(result).toContain("node1 --> node2");
+    });
+
+    test("日本語ノード名を含むSVGを変換", () => {
+      const html = `
+        <span class="plantuml-svg-image">
+          <svg>
+            <g id="node1" class="node">
+              <title>メタ情報</title>
+              <text>Meta</text>
+            </g>
+            <g id="node2" class="node">
+              <title>UIパーツA</title>
+              <text>UIパーツA</text>
+            </g>
+            <g id="edge1" class="edge">
+              <title>メタ情報-&gt;UIパーツA</title>
+            </g>
+          </svg>
+        </span>
+      `;
+      const result = cleanConfluenceHtml(html, { expandMacros: true });
+
+      expect(result).toContain("```mermaid");
+      // ラベル（<text>の値）が含まれることを確認
+      expect(result).toContain("Meta");
+      expect(result).toContain("UIパーツA");
+      expect(result).toContain("node1 --> node2");
+    });
+
+    test("特殊文字を含むノード名でも正しく変換", () => {
+      const html = `
+        <span class="plantuml-svg-image">
+          <svg>
+            <g id="node1" class="node">
+              <title>/-PC</title>
+              <text>/-PC</text>
+            </g>
+            <g id="node2" class="node">
+              <title>Node-2</title>
+              <text>Node 2</text>
+            </g>
+            <g id="edge1" class="edge">
+              <title>/-PC-&gt;Node-2</title>
+            </g>
+          </svg>
+        </span>
+      `;
+      const result = cleanConfluenceHtml(html, { expandMacros: true });
+
+      expect(result).toContain("```mermaid");
+      // SVGのid属性を使用するため、特殊文字を含むラベルも正しく表示される
+      expect(result).toContain('node1["/-PC"]');
+      expect(result).toContain('node2["Node 2"]');
+      expect(result).toContain("node1 --> node2");
+    });
+
+    test("ノードもエッジもない空SVGは変換しない", () => {
+      const html = `
+        <span class="plantuml-svg-image">
+          <svg>
+            <g id="graph0" class="graph">
+              <title>g</title>
+            </g>
+          </svg>
+        </span>
+      `;
+      const result = cleanConfluenceHtml(html, { expandMacros: true });
+
+      // 空のSVGは変換されない（元のまま残るか削除される）
+      expect(result).not.toContain("```mermaid");
+    });
+
+    test("expandMacros=falseの場合はSVGをMermaid変換しない", () => {
+      const html = `
+        <span class="plantuml-svg-image">
+          <svg>
+            <g class="node">
+              <title>NodeA</title>
+              <text>Node A</text>
+            </g>
+          </svg>
+        </span>
+      `;
+      const result = cleanConfluenceHtml(html, { expandMacros: false });
+
+      // 変換されない（TurndownがSVGをテキスト化するため、少なくともmermaidコードブロックにはならない）
+      expect(result).not.toContain("```mermaid");
+      expect(result).not.toContain("flowchart LR");
+    });
+  });
+
   describe("Expandマクロ", () => {
     test("expand-containerを展開", () => {
       const html = `

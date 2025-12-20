@@ -56,6 +56,31 @@ function getTurndownService(convertTables: boolean): TurndownService {
     service.keep(["table", "thead", "tbody", "tr", "th", "td"]);
   }
 
+  // 言語クラス付きコードブロックのカスタムルール（GFMの後に追加して上書き）
+  service.addRule("fencedCodeBlockWithLanguage", {
+    filter: (node) => {
+      return (
+        node.nodeName === "PRE" &&
+        node.firstChild !== null &&
+        node.firstChild.nodeName === "CODE"
+      );
+    },
+    replacement: (_content, node) => {
+      const codeElement = node.firstChild as HTMLElement;
+
+      // code要素のclass属性から言語を取得
+      const className = codeElement.getAttribute("class") || "";
+      const languageMatch = className.match(/language-(\S+)/);
+      const language = languageMatch ? languageMatch[1] : "";
+
+      // コード内容を取得
+      const code = codeElement.textContent || "";
+
+      const fence = "```";
+      return `\n${fence}${language}\n${code}\n${fence}\n`;
+    },
+  });
+
   turndownServiceCache.set(convertTables, service);
   return service;
 }
@@ -131,8 +156,23 @@ function removeConfluenceMetadata(html: string): string {
       xml: false,
     });
 
-    // すべての要素から class, style 属性を削除
-    $("*").removeAttr("class").removeAttr("style");
+    // すべての要素から class, style 属性を削除（ただし language-* クラスは保持）
+    $("*").each((_, element) => {
+      if (element.type === "tag" && element.attribs) {
+        const classAttr = element.attribs.class || "";
+
+        // language-* クラスがある場合は保持、それ以外は削除
+        if (classAttr && /\blanguage-\S+/.test(classAttr)) {
+          const languageClass = classAttr.match(/\blanguage-\S+/)?.[0] || "";
+          $(element).attr("class", languageClass);
+        } else {
+          $(element).removeAttr("class");
+        }
+
+        // style属性は常に削除
+        $(element).removeAttr("style");
+      }
+    });
 
     // すべての data-* 属性を削除
     $("*").each((_, element) => {
@@ -161,6 +201,22 @@ function processRenderedHtml(html: string): string {
   try {
     const $ = cheerio.load(html, {
       xml: false, // HTMLモード
+    });
+
+    // PlantUML SVG画像をMermaidに変換: plantuml-svg-image
+    $(".plantuml-svg-image").each((_, el) => {
+      const svgHtml = $(el).html() || "";
+      const mermaidCode = processSvgToMermaid(svgHtml);
+      if (mermaidCode) {
+        // Mermaidコードブロックに変換
+        // cheerioの.text()を使うことで自動的に適切にエスケープされ、
+        // Turndownが正しくデコードできる
+        const pre = $("<pre></pre>");
+        const code = $('<code class="language-mermaid"></code>');
+        code.text(mermaidCode);
+        pre.append(code);
+        $(el).replaceWith(pre);
+      }
     });
 
     // Expandマクロの処理: class="expand-container"
@@ -201,6 +257,87 @@ function processRenderedHtml(html: string): string {
   } catch (error) {
     console.warn("Failed to process rendered HTML:", error);
     return html;
+  }
+}
+
+/**
+ * PlantUML SVGをMermaid flowchartに変換
+ * @param svgHtml SVG要素のHTML文字列
+ * @returns Mermaidコード（変換失敗時は空文字列）
+ */
+function processSvgToMermaid(svgHtml: string): string {
+  try {
+    const $ = cheerio.load(svgHtml, { xml: true });
+
+    // ノード情報を抽出
+    interface Node {
+      id: string; // SVG要素のid属性（例: node1, node2）
+      title: string; // <title>のテキスト（例: Meta, /-PC）
+      label: string; // 表示ラベル（例: Meta, /-PC）
+    }
+    const nodes: Node[] = [];
+    $("g.node").each((_, el) => {
+      const nodeId = $(el).attr("id"); // SVGのid属性を取得
+      const title = $(el).find("title").first().text().trim();
+      const text = $(el).find("text").first().text().trim();
+      if (nodeId && title) {
+        nodes.push({ id: nodeId, title, label: text || title });
+      }
+    });
+
+    // タイトルからノードIDへのマップを作成
+    const titleToIdMap = new Map<string, string>();
+    for (const node of nodes) {
+      titleToIdMap.set(node.title, node.id);
+    }
+
+    // エッジ情報を抽出
+    interface Edge {
+      from: string; // ノードID（例: node1）
+      to: string; // ノードID（例: node2）
+    }
+    const edges: Edge[] = [];
+    $("g.edge").each((_, el) => {
+      const title = $(el).find("title").first().text().trim();
+      // タイトル形式: "A->B" または "A-->B"
+      const match = title.match(/^(.+?)-+>(.+)$/);
+      if (match) {
+        const fromTitle = match[1].trim();
+        const toTitle = match[2].trim();
+        const fromId = titleToIdMap.get(fromTitle);
+        const toId = titleToIdMap.get(toTitle);
+        if (fromId && toId) {
+          edges.push({ from: fromId, to: toId });
+        }
+      }
+    });
+
+    // ノードやエッジがない場合は変換しない
+    if (nodes.length === 0 && edges.length === 0) {
+      return "";
+    }
+
+    // Mermaid flowchart生成
+    const lines: string[] = ["flowchart LR"];
+
+    // ノード定義
+    for (const node of nodes) {
+      // ラベルに特殊文字が含まれる場合は["..."]で囲む
+      const label = node.label.includes('"')
+        ? node.label.replace(/"/g, "&quot;")
+        : node.label;
+      lines.push(`    ${node.id}["${label}"]`);
+    }
+
+    // エッジ定義
+    for (const edge of edges) {
+      lines.push(`    ${edge.from} --> ${edge.to}`);
+    }
+
+    return lines.join("\n");
+  } catch (error) {
+    console.warn("Failed to convert SVG to Mermaid:", error);
+    return "";
   }
 }
 
@@ -500,7 +637,23 @@ function convertRemainingHtmlTables(markdown: string): string {
     });
 
     // bodyタグの内容のみを取得（html/head/bodyタグを除外）
-    const bodyContent = $("body").html() || $.html();
+    let bodyContent = $("body").html() || $.html();
+
+    // cheerioの.html()がコードブロック内の`>`を`&gt;`にエスケープするため、
+    // コードブロック内のHTMLエンティティをデコード
+    // 正規表現で```で囲まれたコードブロックを検出し、その中の&gt;を>に戻す
+    bodyContent = bodyContent.replace(
+      /(```[\s\S]*?```)/g,
+      (match) => {
+        return match
+          .replace(/&gt;/g, ">")
+          .replace(/&lt;/g, "<")
+          .replace(/&amp;/g, "&")
+          .replace(/&quot;/g, '"')
+          .replace(/&#039;/g, "'");
+      }
+    );
+
     return bodyContent || markdown;
   } catch (error) {
     console.warn("Failed to convert remaining HTML tables:", error);
