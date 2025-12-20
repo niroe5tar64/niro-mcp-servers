@@ -40,6 +40,7 @@
   // Mount the host's .gitconfig
   "mounts": [
     "source=${localEnv:HOME}/.gitconfig,target=/home/bun/.gitconfig,type=bind,consistency=cached",
-    "source=${localEnv:HOME}/.ssh,target=/home/bun/.ssh,type=bind,consistency=cached,readonly"
+    "source=${localEnv:HOME}/.ssh,target=/home/bun/.ssh,type=bind,consistency=cached,readonly",
+    "source=${localEnv:HOME}/.claude/commands,target=/home/bun/.claude/commands,type=bind,consistency=cached"
   ]
 }

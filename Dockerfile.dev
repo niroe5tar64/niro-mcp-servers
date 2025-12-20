@@ -41,6 +41,10 @@ ENV PATH=$BUN_INSTALL/bin:$PATH
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
+# Create .claude directory structure with proper permissions
+RUN mkdir -p /home/bun/.claude/{todos,debug,commands} \
+    && chown -R bun:bun /home/bun/.claude
+
 # Switch to bun user
 USER bun
 
