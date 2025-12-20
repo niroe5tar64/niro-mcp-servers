@@ -11,7 +11,8 @@
         "oven.bun-vscode",
         "dbaeumer.vscode-eslint",
         "biomejs.biome",
-        "mhutchie.git-graph"
+        "mhutchie.git-graph",
+        "bierner.markdown-mermaid"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
