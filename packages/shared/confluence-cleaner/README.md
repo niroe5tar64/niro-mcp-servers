@@ -2,23 +2,55 @@
 
 Confluence HTML cleaner shared library for MCP servers.
 
+Converts **rendered Confluence HTML** (browser-displayed HTML) to clean Markdown optimized for LLM consumption.
+
 ## Features
 
-- Remove HTML noise and metadata
-- Expand Confluence macros
-- Convert to clean Markdown
-- Token reduction optimization
+- **Remove HTML noise and metadata**: Strips class, style, data-* attributes
+- **Process Confluence macros**: Handles Expand, Page Tree, and other rendered macros
+- **Clean up layouts**: Removes Confluence layout wrappers while preserving content
+- **Convert to Markdown**: Uses Turndown with GFM support
+- **Token reduction optimization**: Typically achieves 20-50% token reduction
+
+## Supported Confluence Elements
+
+### Rendered HTML Elements (Post-Browser Rendering)
+- ✅ Expand macro (`expand-container`)
+- ✅ Images with wrappers (`confluence-embedded-file-wrapper`)
+- ✅ Page Tree macro (`plugin_pagetree`) - removed as noise
+- ✅ Layout containers (`contentLayout2`, `columnLayout`, `cell`)
+- ✅ Standard HTML (headings, lists, tables, links, etc.)
+
+### Not Supported
+- ❌ Confluence Storage Format (API XML with `<ac:structured-macro>`)
+- Use rendered HTML from browser instead
 
 ## Usage
 
 ```typescript
-import { cleanConfluenceHtml } from '@niro-mcp/confluence-cleaner';
+import { cleanConfluenceHtml, calculateTokenReduction } from '@niro-mcp/confluence-cleaner';
 
-const cleanedMarkdown = cleanConfluenceHtml(htmlContent, {
-  removeMetadata: true,
-  expandMacros: true,
-  convertTables: true
+// Convert rendered Confluence HTML to Markdown
+const html = '<div class="expand-container">...</div>';
+const markdown = cleanConfluenceHtml(html, {
+  removeMetadata: true,   // Remove class/style/data-* attributes
+  expandMacros: true,     // Process Confluence macros
+  convertTables: true     // Convert tables to Markdown
 });
+
+// Calculate token reduction
+const reduction = calculateTokenReduction(html, markdown);
+console.log(`Token reduction: ${reduction.toFixed(1)}%`);
+```
+
+## Options
+
+```typescript
+interface CleanerOptions {
+  removeMetadata?: boolean;  // Default: true
+  expandMacros?: boolean;    // Default: true
+  convertTables?: boolean;   // Default: true
+}
 ```
 
 ## Development
@@ -27,6 +59,42 @@ const cleanedMarkdown = cleanConfluenceHtml(htmlContent, {
 # Run tests
 bun test
 
+# Check code quality
+bunx biome check .
+
 # Clean build artifacts
 bun run clean
+```
+
+## Implementation Notes
+
+### Processing Order
+1. **Expand macros** (uses class attributes)
+2. **Remove metadata** (strips class/style/data-*)
+3. **Normalize tables**
+4. **Convert to Markdown**
+
+This order is critical because macro processing requires class attributes.
+
+### Input Format
+This library expects **rendered Confluence HTML** (the HTML you see in browser DevTools), not the Storage Format XML from Confluence API.
+
+**Correct input:**
+```html
+<div class="expand-container">
+  <div class="expand-control">
+    <span class="expand-control-text">Click to expand</span>
+  </div>
+  <div class="expand-content">
+    <p>Content</p>
+  </div>
+</div>
+```
+
+**Incorrect input (API XML):**
+```html
+<ac:structured-macro ac:name="expand">
+  <ac:parameter ac:name="title">Click to expand</ac:parameter>
+  <ac:rich-text-body><p>Content</p></ac:rich-text-body>
+</ac:structured-macro>
 ```

@@ -1,10 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
-import {
-  calculateTokenReduction,
-  cleanConfluenceHtml,
-  expandMacro,
-} from "./index";
+import { calculateTokenReduction, cleanConfluenceHtml } from "./index";
 
 describe("calculateTokenReduction", () => {
   test("正常な削減率を計算できる", () => {
@@ -212,74 +208,110 @@ describe("cleanConfluenceHtml", () => {
   });
 });
 
-describe("expandMacro", () => {
-  test("infoマクロを展開", () => {
-    const content = "This is important information";
-    const result = expandMacro("info", content);
 
-    expect(result).toContain("ℹ️");
-    expect(result).toContain("INFO");
-    expect(result).toContain(content);
+describe("レンダリング後のConfluence HTML処理", () => {
+  describe("Expandマクロ", () => {
+    test("expand-containerを展開", () => {
+      const html = `
+        <div id="expander-123" class="expand-container">
+          <div class="expand-control">
+            <span class="expand-control-text">クリックして展開</span>
+          </div>
+          <div class="expand-content">
+            <p>展開される内容</p>
+          </div>
+        </div>
+      `;
+      const result = cleanConfluenceHtml(html, { expandMacros: true });
+
+      expect(result).toContain("▶ クリックして展開");
+      expect(result).toContain("展開される内容");
+      expect(result).not.toContain("expand-container");
+    });
+
+    test("タイトルがない場合はDetailsを使用", () => {
+      const html = `
+        <div class="expand-container">
+          <div class="expand-control">
+            <span class="expand-control-text"></span>
+          </div>
+          <div class="expand-content">
+            <p>内容</p>
+          </div>
+        </div>
+      `;
+      const result = cleanConfluenceHtml(html, { expandMacros: true });
+
+      expect(result).toContain("▶ Details");
+    });
   });
 
-  test("warningマクロを展開", () => {
-    const content = "This is a warning";
-    const result = expandMacro("warning", content);
+  describe("画像処理", () => {
+    test("confluence-embedded-file-wrapperを除去してimg要素を保持", () => {
+      const html = `
+        <span class="confluence-embedded-file-wrapper">
+          <img class="confluence-embedded-image" src="/download/test.png" alt="Test">
+        </span>
+      `;
+      const result = cleanConfluenceHtml(html, { expandMacros: true });
 
-    expect(result).toContain("⚠️");
-    expect(result).toContain("WARNING");
-    expect(result).toContain(content);
+      expect(result).toContain("![Test](/download/test.png)");
+      expect(result).not.toContain("confluence-embedded-file-wrapper");
+    });
+
+    test("画像がないラッパーは削除", () => {
+      const html = `
+        <span class="confluence-embedded-file-wrapper">
+          <span>テキストのみ</span>
+        </span>
+      `;
+      const result = cleanConfluenceHtml(html, { expandMacros: true });
+
+      expect(result).not.toContain("confluence-embedded-file-wrapper");
+    });
   });
 
-  test("noteマクロを展開", () => {
-    const content = "Please note this";
-    const result = expandMacro("note", content);
+  describe("Page Treeマクロ", () => {
+    test("plugin_pagetreeを削除", () => {
+      const html = `
+        <p>before</p>
+        <div class="plugin_pagetree">
+          <div id="pagetreesearch">
+            <form>...</form>
+          </div>
+        </div>
+        <p>after</p>
+      `;
+      const result = cleanConfluenceHtml(html, { expandMacros: true });
 
-    expect(result).toContain("📝");
-    expect(result).toContain("NOTE");
-    expect(result).toContain(content);
+      expect(result).toContain("before");
+      expect(result).toContain("after");
+      expect(result).not.toContain("plugin_pagetree");
+      expect(result).not.toContain("pagetreesearch");
+    });
   });
 
-  test("tipマクロを展開", () => {
-    const content = "Here's a tip";
-    const result = expandMacro("tip", content);
+  describe("レイアウトコンテナ", () => {
+    test("contentLayout2, columnLayout, cellのラッパーを除去", () => {
+      const html = `
+        <div class="contentLayout2">
+          <div class="columnLayout">
+            <div class="cell">
+              <div class="innerCell">
+                <p>コンテンツ</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      const result = cleanConfluenceHtml(html, { expandMacros: true });
 
-    expect(result).toContain("💡");
-    expect(result).toContain("TIP");
-    expect(result).toContain(content);
-  });
-
-  test("codeマクロを展開", () => {
-    const content = "console.log('Hello')";
-    const result = expandMacro("code", content);
-
-    // HTML形式で返される
-    expect(result).toContain("<pre><code>");
-    expect(result).toContain("</code></pre>");
-  });
-
-  test("未知のマクロタイプは元のコンテンツを返す", () => {
-    const content = "Unknown macro content";
-    const result = expandMacro("unknown-macro-type", content);
-
-    expect(result).toBe(content);
-  });
-
-  test("空のコンテンツを処理", () => {
-    const result = expandMacro("info", "");
-
-    // 空文字列でもHTML要素が返される
-    expect(result).toBeDefined();
-    expect(result).toContain("INFO");
-  });
-
-  test("言語指定付きコードマクロを展開", () => {
-    const content = "console.log('Hello')";
-    const result = expandMacro("code", content, "javascript");
-
-    // HTML形式で言語指定を含む
-    expect(result).toContain('<code class="language-javascript">');
-    expect(result).toContain("console.log");
+      expect(result).toContain("コンテンツ");
+      expect(result).not.toContain("contentLayout2");
+      expect(result).not.toContain("columnLayout");
+      expect(result).not.toContain("cell");
+      expect(result).not.toContain("innerCell");
+    });
   });
 });
 
@@ -302,115 +334,70 @@ describe("エラーハンドリング", () => {
   });
 });
 
-describe("Confluence標準マクロ形式", () => {
-  test("<ac:structured-macro>形式のinfoマクロを展開", () => {
-    const html =
-      '<ac:structured-macro ac:name="info"><ac:rich-text-body>Important information</ac:rich-text-body></ac:structured-macro>';
-    const result = cleanConfluenceHtml(html, { removeMetadata: false });
-
-    expect(result).toContain("ℹ️");
-    expect(result).toContain("INFO");
-    expect(result).toContain("Important information");
-  });
-
-  test("<ac:structured-macro>形式のcodeマクロを言語指定付きで展開", () => {
-    const html = `<ac:structured-macro ac:name="code">
-      <ac:parameter ac:name="language">javascript</ac:parameter>
-      <ac:plain-text-body><![CDATA[console.log('test');]]></ac:plain-text-body>
-    </ac:structured-macro>`;
-    const result = cleanConfluenceHtml(html, { removeMetadata: false });
-
-    expect(result).toContain("```javascript");
-    expect(result).toContain("console.log('test');");
-  });
-
-  test("<ac:structured-macro>形式のincludeマクロを展開（ページタイトルを保持）", () => {
-    const html = `<ac:structured-macro ac:name="include">
-      <ac:parameter ac:name="">
-        <ac:link><ri:page ri:content-title="Meta" /></ac:link>
-      </ac:parameter>
-    </ac:structured-macro>`;
-    const result = cleanConfluenceHtml(html, { removeMetadata: false });
-    expect(result).toContain("Included page:");
-    expect(result).toContain("Meta");
-  });
-
-  test("<ac:structured-macro>形式のexpandマクロを展開（titleとbodyを保持）", () => {
-    const html = `<ac:structured-macro ac:name="expand">
-      <ac:parameter ac:name="title">ヘッダー</ac:parameter>
-      <ac:rich-text-body><p>Inside</p></ac:rich-text-body>
-    </ac:structured-macro>`;
-    const result = cleanConfluenceHtml(html, { removeMetadata: false });
-    expect(result).toContain("▶ ヘッダー");
-    expect(result).toContain("Inside");
-  });
-
-  test("<ac:structured-macro>形式のnew_window_linkマクロをリンクに変換", () => {
-    const html = `<ac:structured-macro ac:name="new_window_link">
-      <ac:parameter ac:name="link">https://example.com</ac:parameter>
-      <ac:parameter ac:name="body">Example</ac:parameter>
-    </ac:structured-macro>`;
-    const result = cleanConfluenceHtml(html, { removeMetadata: false });
-    expect(result).toContain("[Example](https://example.com)");
-  });
-
-  test("<ac:structured-macro>形式のtocマクロは除去される", () => {
-    const html = `<p>before</p>
-      <ac:structured-macro ac:name="toc"><ac:parameter ac:name="maxLevel">2</ac:parameter></ac:structured-macro>
-      <p>after</p>`;
-    const result = cleanConfluenceHtml(html, { removeMetadata: false });
-    expect(result).toContain("before");
-    expect(result).toContain("after");
-    expect(result).not.toContain("maxLevel");
-  });
-});
-
-describe("Confluence名前空間タグ（layout/image/time）", () => {
-  test("<ac:layout>はラッパーを剥がして中身を保持", () => {
-    const html = `<ac:layout>
-      <ac:layout-section>
-        <ac:layout-cell><p>Left</p></ac:layout-cell>
-        <ac:layout-cell><p>Right</p></ac:layout-cell>
-      </ac:layout-section>
-    </ac:layout>`;
-    const result = cleanConfluenceHtml(html, { removeMetadata: false });
-    expect(result).toContain("Left");
-    expect(result).toContain("Right");
-    expect(result).not.toContain("ac:layout");
-  });
-
-  test("<ac:image>のattachmentをMarkdown画像に変換", () => {
-    const html = `<p>
-      <ac:image ac:width="100">
-        <ri:attachment ri:filename="sample.png" />
-      </ac:image>
-    </p>`;
-    const result = cleanConfluenceHtml(html, { removeMetadata: false });
-    expect(result).toContain("![sample.png](attachment:sample.png)");
-  });
-
-  test("<time datetime>を文字列として保持", () => {
-    const html = `<p>撮影日<time datetime="2025-03-18" />&nbsp;</p>`;
-    const result = cleanConfluenceHtml(html, { removeMetadata: false });
-    expect(result).toContain("2025-03-18");
-  });
-});
 
 describe("大きめの実サンプル（fixture）", () => {
-  test("レイアウト＋マクロ混在HTMLでも主要情報が落ちない", () => {
+  test("page-2570547984.html: レイアウト＋SVG画像の変換", () => {
     const html = readFileSync(
       new URL("./__fixtures__/page-2570547984.html", import.meta.url),
       "utf8",
     );
-    const md = cleanConfluenceHtml(html, { removeMetadata: false });
+    const md = cleanConfluenceHtml(html);
 
-    // PlantUML SVG画像が含まれている
+    // レイアウトコンテナのclass名が削除されている
+    expect(md).not.toContain("contentLayout2");
+    expect(md).not.toContain("columnLayout");
+
+    // PlantUML SVG画像が含まれている（SVG要素は維持される）
     expect(md).toContain("Meta");
-
-    // レイアウト構造が変換される（ページ構造図の要素）
-    expect(md).toContain("UIパーツB-PC");
 
     // UI要素の名前が含まれている
     expect(md).toContain("UIパーツ");
+  });
+
+  test("page-2570547984.html: トークン削減率が妥当な範囲", () => {
+    const html = readFileSync(
+      new URL("./__fixtures__/page-2570547984.html", import.meta.url),
+      "utf8",
+    );
+    const md = cleanConfluenceHtml(html);
+    const reduction = calculateTokenReduction(html, md);
+
+    // 大幅な削減が期待される（SVGが大きいため）
+    expect(reduction).toBeGreaterThan(20);
+    expect(reduction).toBeLessThan(100);
+  });
+
+  test("page-2317999817.html: Expand＋画像＋Page Tree混在", () => {
+    const html = readFileSync(
+      new URL("./__fixtures__/page-2317999817.html", import.meta.url),
+      "utf8",
+    );
+    const md = cleanConfluenceHtml(html);
+
+    // Expandマクロが処理されている
+    expect(md).toContain("▶");
+
+    // 画像が含まれている
+    expect(md).toContain("![");
+
+    // Page Treeマクロが削除されている
+    expect(md).not.toContain("plugin_pagetree");
+    expect(md).not.toContain("pagetreesearch");
+
+    // 見出しが維持されている
+    expect(md).toContain("#");
+  });
+
+  test("page-2317999817.html: トークン削減率が妥当な範囲", () => {
+    const html = readFileSync(
+      new URL("./__fixtures__/page-2317999817.html", import.meta.url),
+      "utf8",
+    );
+    const md = cleanConfluenceHtml(html);
+    const reduction = calculateTokenReduction(html, md);
+
+    // ある程度の削減が期待される
+    expect(reduction).toBeGreaterThan(10);
+    expect(reduction).toBeLessThan(100);
   });
 });

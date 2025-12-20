@@ -27,22 +27,6 @@ export interface CleanerOptions {
 }
 
 /**
- * サポートされているConfluenceマクロタイプ
- */
-export type MacroType = "info" | "warning" | "note" | "tip" | "code";
-
-/**
- * 認識可能なマクロタイプの集合（実行時チェック用）
- */
-const SUPPORTED_MACRO_TYPES: ReadonlySet<string> = new Set<MacroType>([
-  "info",
-  "warning",
-  "note",
-  "tip",
-  "code",
-]);
-
-/**
  * TurndownServiceのシングルトンキャッシュ
  * convertTablesオプションごとにインスタンスを保持
  */
@@ -98,14 +82,14 @@ export function cleanConfluenceHtml(
     // ローカル変数を使用してパラメータの再代入を避ける
     let cleanedHtml = html;
 
+    // レンダリング後のConfluence HTML要素を処理（class属性を使用するため、メタデータ除去より先に実行）
+    if (expandMacros) {
+      cleanedHtml = processRenderedHtml(cleanedHtml);
+    }
+
     // メタデータ除去が有効な場合は、不要な属性を削除
     if (removeMetadata) {
       cleanedHtml = removeConfluenceMetadata(cleanedHtml);
-    }
-
-    // Confluenceマクロの展開
-    if (expandMacros) {
-      cleanedHtml = expandConfluenceMacros(cleanedHtml);
     }
 
     // テーブル変換が有効な場合、テーブルセル内のブロック要素を正規化
@@ -170,294 +154,53 @@ function removeConfluenceMetadata(html: string): string {
 }
 
 /**
- * Confluence マクロを認識して展開
+ * レンダリング後のConfluence HTMLを処理
+ * ブラウザで表示される形式のHTMLを前提とする
  */
-function expandConfluenceMacros(html: string): string {
-  try {
-    // まずcheerio(XMLモード)でConfluenceの名前空間タグ(ac: / ri:)を構造的に処理する。
-    // 正規表現ベースだと include/expand/new_window_link/widget などが落ちやすいため。
-    const processed = expandConfluenceMacrosWithCheerio(html);
-
-    // cheerio処理が効かないケースのため、既存の正規表現フォールバックも残す。
-    let result = processed;
-
-    // パターン1: Confluence標準の<ac:structured-macro>形式
-    const acMacroPattern =
-      /<ac:structured-macro[^>]*ac:name="([^"]+)"[^>]*>([\s\S]*?)<\/ac:structured-macro>/gi;
-
-    result = result.replace(acMacroPattern, (_match, macroType, content) => {
-      // 言語パラメータを抽出（codeマクロ用）
-      const languageMatch = content.match(
-        /<ac:parameter[^>]*ac:name="language"[^>]*>([^<]+)<\/ac:parameter>/i,
-      );
-      const language = languageMatch ? languageMatch[1].trim() : undefined;
-
-      // ac:rich-text-bodyまたはac:plain-text-bodyからコンテンツを抽出
-      const richTextMatch = content.match(
-        /<ac:rich-text-body>([\s\S]*?)<\/ac:rich-text-body>/i,
-      );
-      const plainTextMatch = content.match(
-        /<ac:plain-text-body><!\[CDATA\[([\s\S]*?)\]\]><\/ac:plain-text-body>/i,
-      );
-
-      let cleanContent = "";
-      if (richTextMatch) {
-        cleanContent = richTextMatch[1].trim();
-      } else if (plainTextMatch) {
-        cleanContent = plainTextMatch[1].trim();
-      } else {
-        // bodyタグがない場合は、パラメータタグを除去して使用
-        cleanContent = content
-          .replace(/<ac:parameter[^>]*>[\s\S]*?<\/ac:parameter>/gi, "")
-          .replace(/<\/?[^>]+(>|$)/g, "")
-          .trim();
-      }
-
-      return expandMacro(macroType, cleanContent, language);
-    });
-
-    // パターン2: div要素のdata-macro-name属性（HTML出力形式）
-    const divMacroPattern =
-      /<div[^>]*data-macro-name="([^"]+)"[^>]*>([\s\S]*?)<\/div>/gi;
-
-    result = result.replace(divMacroPattern, (_match, macroType, content) => {
-      // divタグを除去してコンテンツのみを取得
-      const cleanContent = content.replace(/<\/?div[^>]*>/g, "").trim();
-      return expandMacro(macroType, cleanContent);
-    });
-
-    return result;
-  } catch (error) {
-    console.warn("Failed to expand Confluence macros:", error);
-    return html;
-  }
-}
-
-/**
- * Confluence名前空間タグ(ac: / ri:)をcheerioで処理して、意味のあるHTMLに正規化する。
- * - structured-macro: include/expand/new_window_link/widget/toc/linkgraph などを展開
- * - layout: セクション/セルのラッパーを剥がす
- * - time: datetimeを文字列化
- * - image(attachment): turndownが扱える<img>へ
- */
-function expandConfluenceMacrosWithCheerio(html: string): string {
+function processRenderedHtml(html: string): string {
   try {
     const $ = cheerio.load(html, {
-      // Confluenceの ac: / ri: など名前空間タグを崩さず扱う
-      xml: { decodeEntities: false },
+      xml: false, // HTMLモード
     });
 
-    const getMacroParams = (macroEl: Parameters<typeof $>[0]) => {
-      const params: Record<string, string> = {};
-      $(macroEl)
-        .find("ac\\:parameter")
-        .each((_, p) => {
-          const key = ($(p).attr("ac:name") || "").trim();
-          const value = $(p).text().trim();
-          if (key) {
-            params[key] = value;
-          }
-        });
-      return params;
-    };
+    // Expandマクロの処理: class="expand-container"
+    $(".expand-container").each((_, el) => {
+      const $control = $(el).find(".expand-control-text");
+      const title = $control.text().trim() || "Details";
+      const $content = $(el).find(".expand-content");
+      const body = $content.html() || "";
 
-    const getMacroBodyHtml = (macroEl: Parameters<typeof $>[0]) => {
-      const rich = $(macroEl).find("ac\\:rich-text-body").first();
-      if (rich.length) return (rich.html() || "").trim();
-      const plain = $(macroEl).find("ac\\:plain-text-body").first();
-      if (plain.length) return plain.text().trim();
-      return $(macroEl).text().trim();
-    };
-
-    // structured-macro を展開
-    $("ac\\:structured-macro").each((_, el) => {
-      const macroName = ($(el).attr("ac:name") || "").trim();
-      if (!macroName) return;
-
-      const params = getMacroParams(el);
-      const bodyHtml = getMacroBodyHtml(el);
-
-      switch (macroName.toLowerCase()) {
-        case "toc":
-          // 目次はLLM向けMarkdownではノイズになりがちなので削除
-          $(el).replaceWith("");
-          return;
-
-        case "include": {
-          const pageTitle =
-            $(el).find("ri\\:page").attr("ri:content-title")?.trim() || "";
-          const spaceKey =
-            $(el).find("ri\\:space").attr("ri:space-key")?.trim() || "";
-          const label = pageTitle || spaceKey || "Included content";
-          $(el).replaceWith(
-            `<p><em>Included page:</em> ${escapeHtml(label)}</p>`,
-          );
-          return;
-        }
-
-        case "expand": {
-          const title = (params.title || "Details").trim();
-          // <details> はturndownで落ちやすいので、シンプルなHTMLへ正規化
-          $(el).replaceWith(
-            `<div><strong>▶ ${escapeHtml(
-              title,
-            )}</strong><br><br>${bodyHtml}</div>`,
-          );
-          return;
-        }
-
-        case "new_window_link": {
-          const link = (params.link || "").trim();
-          const text = (params.body || params.link || link || "link").trim();
-          if (!link) {
-            $(el).replaceWith(escapeHtml(text));
-            return;
-          }
-          $(el).replaceWith(
-            `<a href="${escapeHtml(link)}">${escapeHtml(text)}</a>`,
-          );
-          return;
-        }
-
-        case "widget": {
-          const url =
-            $(el).find("ri\\:url").attr("ri:value")?.trim() ||
-            (params.url || "").trim();
-          const width = (params.width || "").trim();
-          const height = (params.height || "").trim();
-          const size =
-            width || height ? ` (${width || "?"}x${height || "?"})` : "";
-          const label = url ? `Widget: ${url}${size}` : `Widget${size}`;
-          if (url) {
-            $(el).replaceWith(
-              `<p><a href="${escapeHtml(url)}">${escapeHtml(
-                "Widget",
-              )}</a>${escapeHtml(size)}</p>`,
-            );
-          } else {
-            $(el).replaceWith(`<p>${escapeHtml(label)}</p>`);
-          }
-          return;
-        }
-
-        case "linkgraph": {
-          const spaceKey =
-            $(el).find("ri\\:space").attr("ri:space-key")?.trim() || "";
-          const labels = (params.labels || "").trim();
-          const label = [
-            "Link graph",
-            spaceKey ? `space=${spaceKey}` : "",
-            labels ? `labels=${labels}` : "",
-          ]
-            .filter(Boolean)
-            .join(" ");
-          $(el).replaceWith(`<p><em>${escapeHtml(label)}</em></p>`);
-          return;
-        }
-
-        default: {
-          // 既存対応( info/warning/note/tip/code ) は共通関数に委譲
-          if (
-            ["info", "warning", "note", "tip", "code"].includes(
-              macroName.toLowerCase(),
-            )
-          ) {
-            const language =
-              $(el)
-                .find('ac\\:parameter[ac\\:name="language"]')
-                .first()
-                .text()
-                .trim() || undefined;
-            $(el).replaceWith(expandMacro(macroName, bodyHtml, language));
-          } else {
-            // 未知マクロはbodyだけ残す（パラメータ等のノイズを落とす）
-            $(el).replaceWith(bodyHtml);
-          }
-        }
-      }
-    });
-
-    // ac:image (attachment) を <img> に変換
-    $("ac\\:image").each((_, el) => {
-      const filename =
-        $(el).find("ri\\:attachment").attr("ri:filename")?.trim() || "";
-      const width = ($(el).attr("ac:width") || "").trim();
-      if (!filename) {
-        $(el).replaceWith("");
-        return;
-      }
-      const widthAttr = width ? ` width="${escapeHtml(width)}"` : "";
+      // Markdown-friendly形式に変換
       $(el).replaceWith(
-        `<img src="attachment:${escapeHtml(
-          filename,
-        )}" alt="${escapeHtml(filename)}"${widthAttr} />`,
+        `<div><strong>▶ ${escapeHtml(title)}</strong><br><br>${body}</div>`,
       );
     });
 
-    // <time datetime="..."/> をテキスト化
-    $("time").each((_, el) => {
-      const dt = ($(el).attr("datetime") || "").trim();
-      const text = dt || $(el).text().trim();
-      $(el).replaceWith(escapeHtml(text));
+    // 画像のラッパー除去: confluence-embedded-file-wrapper
+    $(".confluence-embedded-file-wrapper").each((_, el) => {
+      const $img = $(el).find("img");
+      if ($img.length > 0) {
+        // ラッパーを削除してimg要素のみ保持
+        $(el).replaceWith($img);
+      } else {
+        // 画像がない場合は削除
+        $(el).remove();
+      }
     });
 
-    // layout系ラッパーは剥がす（順序を保って中身を残す）
-    $("ac\\:layout, ac\\:layout-section, ac\\:layout-cell").each((_, el) => {
+    // Page Tree マクロの削除: plugin_pagetree
+    $(".plugin_pagetree").remove();
+
+    // レイアウトコンテナのラッパー除去
+    $(".contentLayout2, .columnLayout, .cell, .innerCell").each((_, el) => {
       const contents = $(el).contents();
       $(el).replaceWith(contents);
     });
 
-    return $.root().html() || html;
-  } catch {
-    // cheerioパースに失敗した場合は元のHTMLを返す
+    return $.html();
+  } catch (error) {
+    console.warn("Failed to process rendered HTML:", error);
     return html;
-  }
-}
-
-/**
- * マクロタイプがサポートされているかチェック
- */
-function isSupportedMacroType(macroType: string): macroType is MacroType {
-  return SUPPORTED_MACRO_TYPES.has(macroType.toLowerCase());
-}
-
-/**
- * Expand Confluence macro to readable format (HTML形式で返す)
- * Turndownが後で適切にMarkdownに変換する
- */
-export function expandMacro(
-  macroType: string,
-  content: string,
-  language?: string,
-): string {
-  const trimmedContent = content.trim();
-  const normalizedType = macroType.toLowerCase();
-
-  // 型安全なマクロ展開
-  if (!isSupportedMacroType(normalizedType)) {
-    // 未知のマクロタイプはそのまま返す
-    return trimmedContent;
-  }
-
-  switch (normalizedType) {
-    case "info":
-      return `<div><strong>ℹ️ INFO</strong><br><br>${trimmedContent}</div>`;
-
-    case "warning":
-      return `<div><strong>⚠️ WARNING</strong><br><br>${trimmedContent}</div>`;
-
-    case "note":
-      return `<div><strong>📝 NOTE</strong><br><br>${trimmedContent}</div>`;
-
-    case "tip":
-      return `<div><strong>💡 TIP</strong><br><br>${trimmedContent}</div>`;
-
-    case "code":
-      // コードマクロはHTML codeブロックとして展開（言語指定付き）
-      if (language) {
-        return `<pre><code class="language-${language}">${escapeHtml(trimmedContent)}</code></pre>`;
-      }
-      return `<pre><code>${escapeHtml(trimmedContent)}</code></pre>`;
   }
 }
 
@@ -601,24 +344,6 @@ function normalizeTableCells(html: string): string {
 }
 
 /**
- * エスケープされた閉じ括弧を解除
- * Bunのパーサーエラーを回避するため、別関数に分離
- */
-function unescapeCloseParen(text: string): string {
-  const backslash = String.fromCharCode(92);
-  const closeParen = String.fromCharCode(41);
-  const escaped = backslash + closeParen;
-  let result = text;
-  let index = result.indexOf(escaped);
-  while (index !== -1) {
-    result =
-      result.substring(0, index) + closeParen + result.substring(index + 2);
-    index = result.indexOf(escaped, index + 1);
-  }
-  return result;
-}
-
-/**
  * テーブルセル内のエスケープされたMarkdown構文を解除
  * Turndownがテーブルセル内のMarkdown構文をエスケープしてしまうため、後処理で解除する
  */
@@ -708,8 +433,8 @@ function convertRemainingHtmlTables(markdown: string): string {
       // <thead>がある場合はヘッダー行を取得
       const $thead = $table.find("thead");
       if ($thead.length > 0) {
+        const cells: string[] = [];
         $thead.find("tr").each((_, tr) => {
-          const cells: string[] = [];
           $(tr)
             .find("th, td")
             .each((_, cell) => {
