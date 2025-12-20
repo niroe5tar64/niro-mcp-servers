@@ -1,10 +1,12 @@
 # Confluence-Content MCP Server
 
-ConfluenceページのコンテンツをHTMLビュー形式（レンダリング済みHTML）で取得するMCPサーバー。
+ConfluenceページのコンテンツをMarkdown形式で取得するMCPサーバー。
 
 ## 機能
 
-- **HTMLビュー形式**: Confluenceページのレンダリング済みHTMLを取得
+- **Markdown変換**: Confluenceページのレンダリング済みHTMLをクリーンなMarkdownに変換
+- **トークン削減**: 約50%のトークン削減を実現
+- **マクロ展開**: Confluenceマクロ（info、warning、codeなど）を適切に変換
 - **ページ情報**: ページのメタデータ（ID、タイトル、スペース情報）を取得
 - **エラーハンドリング**: APIエラーに対する包括的なエラーハンドリング
 - **MCPプロトコル**: Model Context Protocolに完全準拠
@@ -36,9 +38,9 @@ Claude Desktopの設定に以下を追加：
 
 サーバーは1つのツールを提供します：
 
-### get_confluence_page_view
+### get_confluence_page_markdown
 
-ConfluenceページのコンテンツをHTMLビュー形式（レンダリング済みHTML）で取得します。
+ConfluenceページのコンテンツをMarkdown形式で取得します。HTMLビュー形式を取得し、クリーンなMarkdownに変換して返します。
 
 **パラメータ:**
 - `pageId` (必須): ConfluenceページID
@@ -65,7 +67,7 @@ ConfluenceページのコンテンツをHTMLビュー形式（レンダリング
       "self": "https://confluence.example.com/rest/api/content/2447941326"
     }
   },
-  "html": "<div>レンダリング済みHTMLコンテンツ...</div>"
+  "markdown": "# ページタイトル\n\nクリーンなMarkdownコンテンツ..."
 }
 ```
 

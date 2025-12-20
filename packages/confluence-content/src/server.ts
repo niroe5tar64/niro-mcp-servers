@@ -11,10 +11,10 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import {
-  type GetPageViewArgs,
-  getPageViewTool,
-  handleGetPageView,
-} from "./tools/get-page-view.js";
+  type GetPageMarkdownArgs,
+  getPageMarkdownTool,
+  handleGetPageMarkdown,
+} from "./tools/get-page-markdown.js";
 
 /**
  * MCPサーバーを作成・設定
@@ -48,7 +48,7 @@ export function createMcpServer(): Server {
    */
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
-      tools: [getPageViewTool],
+      tools: [getPageMarkdownTool],
     };
   });
 
@@ -59,9 +59,9 @@ export function createMcpServer(): Server {
    * ツール名に基づいて適切なハンドラーを呼び出します。
    */
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    if (request.params.name === "get_confluence_page_view") {
-      return handleGetPageView(
-        request.params.arguments as unknown as GetPageViewArgs,
+    if (request.params.name === "get_confluence_page_markdown") {
+      return handleGetPageMarkdown(
+        request.params.arguments as unknown as GetPageMarkdownArgs,
       );
     }
 

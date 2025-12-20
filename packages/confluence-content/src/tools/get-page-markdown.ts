@@ -1,8 +1,8 @@
 /**
- * Get Confluence Page View Tool
+ * Get Confluence Page Markdown Tool
  *
- * ConfluenceページのHTMLビュー形式（レンダリング済みHTML）を取得し、
- * クリーンアップしたMarkdown形式に変換するMCPツール。
+ * ConfluenceページをMarkdown形式で取得するMCPツール。
+ * HTMLビューを取得し、クリーンアップしたMarkdownに変換します。
  */
 
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
@@ -16,8 +16,8 @@ import {
  * ツール定義
  * MCPクライアントに提供されるツールのメタデータ
  */
-export const getPageViewTool: Tool = {
-  name: "get_confluence_page_view",
+export const getPageMarkdownTool: Tool = {
+  name: "get_confluence_page_markdown",
   description:
     "Get Confluence page content in Markdown format. Returns page information and cleaned Markdown content converted from rendered HTML.",
   inputSchema: {
@@ -35,7 +35,7 @@ export const getPageViewTool: Tool = {
 /**
  * ツール引数の型定義
  */
-export interface GetPageViewArgs {
+export interface GetPageMarkdownArgs {
   pageId: string;
 }
 
@@ -46,7 +46,9 @@ export interface GetPageViewArgs {
  * @param args - ツールの引数
  * @returns ページ情報とクリーンアップされたMarkdownコンテンツ
  */
-export async function handleGetPageView(args: GetPageViewArgs): Promise<{
+export async function handleGetPageMarkdown(
+  args: GetPageMarkdownArgs,
+): Promise<{
   content: Array<{ type: "text"; text: string }>;
   isError?: boolean;
 }> {
@@ -92,23 +94,27 @@ export async function handleGetPageView(args: GetPageViewArgs): Promise<{
     const responseSizeMB = (responseSize / (1024 * 1024)).toFixed(2);
     const reduction = (((htmlSize - markdownSize) / htmlSize) * 100).toFixed(2);
 
-    console.error(`[get_confluence_page_view] Page ID: ${args.pageId.trim()}`);
     console.error(
-      `[get_confluence_page_view] HTML size: ${htmlSize} bytes (${(htmlSize / 1024).toFixed(2)} KB)`,
+      `[get_confluence_page_markdown] Page ID: ${args.pageId.trim()}`,
     );
     console.error(
-      `[get_confluence_page_view] Markdown size: ${markdownSize} bytes (${(markdownSize / 1024).toFixed(2)} KB)`,
-    );
-    console.error(`[get_confluence_page_view] Size reduction: ${reduction}%`);
-    console.error(
-      `[get_confluence_page_view] Response size: ${responseSize} bytes (${responseSizeKB} KB, ${responseSizeMB} MB)`,
+      `[get_confluence_page_markdown] HTML size: ${htmlSize} bytes (${(htmlSize / 1024).toFixed(2)} KB)`,
     );
     console.error(
-      `[get_confluence_page_view] Response format: content array with ${1} item(s)`,
+      `[get_confluence_page_markdown] Markdown size: ${markdownSize} bytes (${(markdownSize / 1024).toFixed(2)} KB)`,
     );
-    console.error("[get_confluence_page_view] Content type: text");
     console.error(
-      `[get_confluence_page_view] Content text length: ${jsonString.length} bytes`,
+      `[get_confluence_page_markdown] Size reduction: ${reduction}%`,
+    );
+    console.error(
+      `[get_confluence_page_markdown] Response size: ${responseSize} bytes (${responseSizeKB} KB, ${responseSizeMB} MB)`,
+    );
+    console.error(
+      `[get_confluence_page_markdown] Response format: content array with ${1} item(s)`,
+    );
+    console.error("[get_confluence_page_markdown] Content type: text");
+    console.error(
+      `[get_confluence_page_markdown] Content text length: ${jsonString.length} bytes`,
     );
 
     // JSON形式でレスポンスを返す
