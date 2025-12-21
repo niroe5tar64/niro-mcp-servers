@@ -27,6 +27,7 @@ services:
     tty: true
 
   # Confluence-Content MCP Server (can be started separately for testing)
+  # Note: volumes (including packages/shared) are inherited from docker-compose.yml via extends
   confluence-content:
     extends:
       file: docker-compose.yml

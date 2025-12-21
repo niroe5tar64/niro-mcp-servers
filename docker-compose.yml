@@ -10,6 +10,17 @@ services:
     volumes:
       # Mount source code for development
       - ./packages/confluence-content:/app/packages/confluence-content
+      # Mount shared packages for workspace dependencies
+      # Note: node_modules are preserved from container build via named volumes below
+      - ./packages/shared:/app/packages/shared
+      # Preserve container's node_modules (from build) using named volumes
+      # This prevents host's empty/missing node_modules from overriding container's installed modules
+      - node_modules_shared_cleaner:/app/packages/shared/confluence-cleaner/node_modules
+      - node_modules_shared_core:/app/packages/shared/mcp-server-core/node_modules
+      # Mount root package.json and lock files for workspace resolution
+      - ./package.json:/app/package.json
+      - ./bun.lock:/app/bun.lock
+      - ./bunfig.toml:/app/bunfig.toml
     env_file:
       # Load environment variables from packages/confluence-content/.env
       - ./packages/confluence-content/.env
@@ -31,3 +42,9 @@ services:
 networks:
   niro-mcp-network:
     driver: bridge
+
+volumes:
+  # Named volumes to preserve node_modules from container build
+  # These volumes are populated during docker build and persist across container runs
+  node_modules_shared_cleaner:
+  node_modules_shared_core:
