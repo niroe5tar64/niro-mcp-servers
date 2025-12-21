@@ -21,7 +21,7 @@ RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
     update-locale LANG=en_US.UTF-8
 
 # Install Claude Code globally
-RUN npm install -g @anthropic-ai/claude-code
+RUN npm install -g @anthropic-ai/claude-code@latest
 
 # Set up sudo for bun user (useful for installing additional tools)
 RUN echo "bun ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/bun \
