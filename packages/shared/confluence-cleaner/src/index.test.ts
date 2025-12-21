@@ -1,3 +1,23 @@
+/**
+ * confluence-cleaner 統合テスト
+ *
+ * ## テスト分割の方針
+ *
+ * このファイルは公開API（cleanConfluenceHtml, calculateTokenReduction）の
+ * 統合テストとして維持する。内部モジュール（preprocessors, postprocessors等）に
+ * 密結合したテストは避け、リファクタリング耐性を保つ。
+ *
+ * ### 分割を検討するタイミング
+ * - このファイルが1000行を超えた場合
+ * - 特定モジュールに複雑なロジックが追加され、単体テストが必要な場合
+ * - CIで特定テストだけ並列実行したい場合
+ *
+ * ### 分割時の構成案
+ * - index.test.ts         → 公開APIの統合テスト（現状維持）
+ * - preprocessors/*.test.ts → 前処理モジュールの単体テスト
+ * - postprocessors/*.test.ts → 後処理モジュールの単体テスト
+ */
+
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { calculateTokenReduction, cleanConfluenceHtml } from "./index";
