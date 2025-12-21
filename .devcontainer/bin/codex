@@ -10,5 +10,5 @@ if [ -z "${real:-}" ] || [ ! -x "$real" ]; then
   exit 127
 fi
 
-# 常に「承認なし + workspace-write サンドボックス」で実行
-exec "$real" -a never --sandbox workspace-write "$@"
+# 常に「承認なし + サンドボックス完全無効」で実行 (--yolo)
+exec "$real" --yolo "$@"

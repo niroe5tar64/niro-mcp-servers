@@ -29,7 +29,8 @@
   // Container user
   "remoteUser": "bun",
   "remoteEnv": {
-    "PATH": "/workspace/.devcontainer/bin:${containerEnv:PATH}"
+    "PATH": "/workspace/.devcontainer/bin:${containerEnv:PATH}",
+    "CODEX_HOME": "/workspace/.codex"
   },
 
   // Port forwarding
@@ -38,10 +39,11 @@
   // Post-create command
   "postCreateCommand": "bun install",
 
-  // Mount the host's .gitconfig
+  // Mount the host's .gitconfig, .claude, and .codex directories
   "mounts": [
     "source=${localEnv:HOME}/.gitconfig,target=/home/bun/.gitconfig,type=bind,consistency=cached",
     "source=${localEnv:HOME}/.ssh,target=/home/bun/.ssh,type=bind,consistency=cached,readonly",
-    "source=${localEnv:HOME}/.claude/commands,target=/home/bun/.claude/commands,type=bind,consistency=cached"
+    "source=${localEnv:HOME}/.claude,target=/home/bun/.claude,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.codex,target=/home/bun/.codex,type=bind,consistency=cached"
   ]
 }
