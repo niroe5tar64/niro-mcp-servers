@@ -7,6 +7,7 @@
 
 import {
   convertRemainingHtmlTables,
+  decodeHtmlEntities,
   unescapeMarkdownInTables,
 } from "./postprocessors";
 import {
@@ -84,6 +85,8 @@ export function cleanConfluenceHtml(
     if (convertTables) {
       markdown = convertRemainingHtmlTables(markdown);
     }
+
+    markdown = decodeHtmlEntities(markdown);
 
     return markdown;
   } catch (error) {
