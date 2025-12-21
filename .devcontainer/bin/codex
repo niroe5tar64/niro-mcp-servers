@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# PATHの先頭にこのラッパーがいる想定なので、which -a で「2つ目」を本体として拾う
+real="$(which -a codex | awk 'NR==2{print; exit}')"
+
+if [ -z "${real:-}" ] || [ ! -x "$real" ]; then
+  echo "Error: real codex binary not found (wrapper may be shadowing only one entry in PATH)." >&2
+  echo "Hint: run: which -a codex" >&2
+  exit 127
+fi
+
+# 常に「承認なし + workspace-write サンドボックス」で実行
+exec "$real" -a never --sandbox workspace-write "$@"
