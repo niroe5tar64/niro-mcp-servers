@@ -8,12 +8,12 @@
 - `workflow.md`: 司会プロンプトの実運用サイクル。
 - `roles.md`: ロールの定義と出力フォーマット叩き台。
 - `logging.md`: ログのディレクトリ/ファイル命名と保存ルール。
-- `summary.template.md`: マルチエージェント議論用の要約ファイルテンプレート。
+- `summary.template.md`: マルチエージェント議論用の要約ファイルテンプレート（YAML フロントマター付き）。
 
 ## 使い方の流れ
 
 1) `workflow.md` の7ステップを司会プロンプトに反映する。  
 2) 必要なロールを `roles.md` から選び、識別子をプロンプトとファイル名に使う。  
 3) ログは `logging.md` の命名規約に従い、`logs/YYYY-MM-DD-topic/` に要約と生ログを配置。  
-   - 要約テンプレは `summary.template.md` を `summary.md` としてコピーして使う。  
+   - 要約テンプレは `summary.template.md` を `summary.md` としてコピーし、フロントマターの `date/topic/participants/tags` を埋める。  
 4) 回すたびに気づきがあれば本ディレクトリの叩き台を更新する。

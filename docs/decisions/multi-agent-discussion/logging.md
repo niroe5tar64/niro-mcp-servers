@@ -12,6 +12,25 @@
 - 要約: `summary.md`
 - 生ログ: `NN-role-raw.md`（`01-` から始め、並列取得なら同じ番号＋異なるロール）
 
+## フロントマター（要約）
+
+```yaml
+---
+date: YYYY-MM-DD
+topic: <topic>
+participants:
+  - facilitator
+  - pm-ux
+  - architect
+  - ops-cost
+  - risk-security
+tags:
+  - arch
+  - process
+  - product
+---
+```
+
 ## 運用メモ
 
 - 並列生成を行う場合は、同じ番号でロール違いの生ログを並べる（例: `02-architect-raw.md`, `02-risk-security-raw.md`）。

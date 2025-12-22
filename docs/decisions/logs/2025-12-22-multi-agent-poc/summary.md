@@ -1,6 +1,6 @@
 ---
-date: YYYY-MM-DD
-topic: <topic>
+date: 2025-12-22
+topic: multi-agent POC
 participants:
   - facilitator
   - pm-ux
