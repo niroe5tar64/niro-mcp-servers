@@ -48,7 +48,9 @@ if (!frontmatter.description) {
   fail("Frontmatter missing required field: description");
 }
 if (frontmatter.name !== skillName) {
-  fail(`Frontmatter name '${frontmatter.name}' does not match folder '${skillName}'.`);
+  fail(
+    `Frontmatter name '${frontmatter.name}' does not match folder '${skillName}'.`,
+  );
 }
 
 console.log("[OK] Frontmatter looks valid.");
