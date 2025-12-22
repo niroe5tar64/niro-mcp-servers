@@ -8,7 +8,7 @@
 - `docs/decisions/README.md`: この運用ガイド。
 - `docs/decisions/adr/`: 確定した決定事項を ADR 形式で保存。
 - `docs/decisions/logs/`: 壁打ち・議論の簡易ログと必要に応じて詳細ログ。
-- `docs/decisions/multi-agent-discussion/`: 複数エージェント議論の運用ガイド（ワークフロー/ロール/ログ命名）。
+- `docs/decisions/guide/`: 議論ログの運用ガイド（共通事項と各方式のルール）。
 
 ## ファイル命名
 
@@ -44,25 +44,8 @@ Next Steps
 
 ## 議論ログテンプレ
 
-````
-# YYYY-MM-DD topic
-Summary (5-10 行で結論と論点を要約)
-- ...
-
-Participants: A, B (optional)
-Tags: product, data, ux (必要なら)
-
-Decision (あれば)
-- ...
-
-Notes
-- 箇条書きで議事録的にメモ
-
-Raw (必要な場合のみ)
-```text
-ここに生ログを貼る
-```
-````
+- 通常ログ: `docs/decisions/guide/standard/summary.template.md`
+- 複数エージェント: `docs/decisions/guide/multi-agent/summary.template.md`
 - メモ: 複数 Agent 議論では `logs/YYYY-MM-DD-topic/summary.md` を使い、生ログは同階層に `01-role-raw.md` 形式で配置する。
 
 

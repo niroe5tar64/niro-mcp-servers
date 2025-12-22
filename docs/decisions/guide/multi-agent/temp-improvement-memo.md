@@ -12,12 +12,14 @@ docs/decisions/
 ├── logs/                        # 議論ログの実体
 │   └── 2025-12-22-multi-agent-discussion/
 │       └── summary.md           # 実際の議論記録
-└── multi-agent-discussion/      # 複数Agent議論の「メタ情報」
-    ├── README.md                # 概要
-    ├── workflow.md              # 7ステップの進行手順
-    ├── roles.md                 # 5つのロール定義
-    ├── logging.md               # ログ命名規約
-    └── summary.template.md      # 要約テンプレート
+└── guide/                       # 運用ガイド集約
+    ├── README.md                # 共通ルール
+    └── multi-agent/             # 複数Agent議論のガイド
+        ├── README.md            # 概要
+        ├── workflow.md          # 7ステップの進行手順
+        ├── roles.md             # 5つのロール定義
+        ├── logging.md           # ログ命名規約
+        └── summary.template.md  # 要約テンプレート
 
 本質的にやりたいこと
 
@@ -79,10 +81,10 @@ README 72行目:
 - ✅ 複数ファイル/複数パッケージに影響する
 - ✅ 6ヶ月以上参照される可能性がある
 
-4. logs/ と multi-agent-discussion/ の役割が紛らわしい
+4. logs/ と multi-agent ガイドの役割が紛らわしい
 
 - logs/2025-12-22-multi-agent-discussion/ は実際の議論ログ
-- multi-agent-discussion/ はガイド・テンプレート集
+- guide/multi-agent/ はガイド・テンプレート集
 
 名前が似ていて混乱しやすい。
 

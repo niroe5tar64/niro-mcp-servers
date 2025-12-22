@@ -45,4 +45,4 @@ tags:
   5) 並列→要約統合: 並列取得した発言を `facilitator` が重複圧縮し、決定/保留/宿題を更新。推測は質問に変換。
   6) リスクチェック: `risk-security` と `ops-cost` に1ターン与え、見落としリスクと運用懸念を表面化。
   7) クロージング: `facilitator` が最終要約（決定/保留/宿題、理由と代替案、次アクション）を提示し終了。
-- 詳細ガイド: 手順・ロール定義・ログ命名は `docs/decisions/multi-agent-discussion/` に集約。
+- 詳細ガイド: 手順・ロール定義・ログ命名は `docs/decisions/guide/multi-agent/` に集約。
