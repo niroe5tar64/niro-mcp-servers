@@ -25,7 +25,7 @@
 status: Proposed | Accepted | Rejected | Superseded
 date: YYYY-MM-DD
 superseded_by: null # ADRファイル名（例: 2025-12-22-xxx.md）
-tags: [arch, product, data, security, ops]
+tags: [] # guide/tags.md から選択
 ---
 
 # Title
