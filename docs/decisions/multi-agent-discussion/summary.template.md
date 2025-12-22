@@ -1,19 +1,29 @@
-# 2025-12-22 multi-agent POC
+---
+date: 2025-12-22
+topic: multi-agent POC
+participants:
+  - facilitator
+  - pm-ux
+  - architect
+  - ops-cost
+  - risk-security
+tags:
+  - arch
+  - process
+  - product
+---
 
-Summary
+# Summary
 - （ここに結論と主要論点を 5–10 行で要約）
 
-Participants: facilitator, pm-ux, architect, ops-cost, risk-security
-Tags: arch, process, product
-
-Decision
+## Decision
 - （決まったことを箇条書きで）
 
-Notes
+## Notes
 - （議事メモ的に箇条書き）
 
-Open / TODO
+## Open / TODO
 - （宿題や保留事項を箇条書き）
 
-Log policy
+## Log policy
 - 生ログを置く場合は同ディレクトリに `NN-role-raw.md`（例: `01-facilitator-raw.md`）で配置する。
