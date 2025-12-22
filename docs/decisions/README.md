@@ -20,27 +20,37 @@
 
 ## ADR テンプレ
 
-```
-# Title
-Status: Proposed | Accepted | Rejected | Superseded by <id>
-Date: YYYY-MM-DD
-Tags: arch, product, data, security, ops (カンマ区切り)
+```markdown
+---
+status: Proposed | Accepted | Rejected | Superseded
+date: YYYY-MM-DD
+superseded_by: null # ADRファイル名（例: 2025-12-22-xxx.md）
+tags: [arch, product, data, security, ops]
+---
 
-Context
+# Title
+
+## Context
 - 背景・課題・制約を書く
 
-Decision
+## Decision
 - 採用する方針を短く箇条書き
 
-Consequences
+## Consequences
 - 効果と副作用、追加コストを書く
 
-Alternatives
+## Alternatives
 - 検討したが採用しなかった案と理由
 
-Next Steps
+## Next Steps
 - チケットや担当があれば書く
 ```
+
+**注記**:
+- `status` は `Proposed` (初期提案), `Accepted` (確定), `Rejected` (却下), `Superseded` (新しいADRで上書き) から選択
+- `superseded_by` は `Superseded` の場合のみ新しいADRファイル名を記入
+- タグはコンマ区切りではなく配列形式で記述
+- YAMLフロントマターにより、メタデータを構造化・検索可能にする
 
 ## 議論ログテンプレ
 

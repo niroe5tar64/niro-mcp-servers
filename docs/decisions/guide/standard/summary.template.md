@@ -18,6 +18,3 @@ tags:
 
 ## Open / TODO
 - （宿題や保留事項を箇条書き）
-
-## Log policy
-- 生ログを置く場合は同ディレクトリに `NN-main-raw.md`（例: `01-main-raw.md`）で配置する。
