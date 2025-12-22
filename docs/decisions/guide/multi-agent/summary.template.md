@@ -7,10 +7,7 @@ participants:
   - architect
   - ops-cost
   - risk-security
-tags:
-  - arch
-  - process
-  - product
+tags: [] # guide/tags.md から選択
 ---
 
 # Summary

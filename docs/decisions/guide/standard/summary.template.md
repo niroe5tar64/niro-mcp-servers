@@ -2,9 +2,8 @@
 date: YYYY-MM-DD
 topic: <topic>
 participants:
-  - name-1
-tags:
-  - product
+  - <name>
+tags: [] # guide/tags.md から選択
 ---
 
 # Summary
