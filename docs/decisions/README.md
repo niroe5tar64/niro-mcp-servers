@@ -8,12 +8,15 @@
 - `docs/decisions/README.md`: この運用ガイド。
 - `docs/decisions/adr/`: 確定した決定事項を ADR 形式で保存。
 - `docs/decisions/logs/`: 壁打ち・議論の簡易ログと必要に応じて詳細ログ。
+- `docs/decisions/multi-agent-discussion/`: 複数エージェント議論の運用ガイド（ワークフロー/ロール/ログ命名）。
 
 ## ファイル命名
 
 - ADR: `YYYY-MM-DD-topic.md` (例: `2024-05-18-choose-db.md`)
-- 議論ログ: `YYYY-MM-DD-topic.md`
-- ログの生ログ付き版: `YYYY-MM-DD-topic-raw.md` (要約 + raw 貼り付け)
+- 議論ログ（通常）: `YYYY-MM-DD-topic.md`
+- 議論ログ（複数 Agent）: ディレクトリ `YYYY-MM-DD-topic/` を作り、要約は `summary.md` に置く。
+- 生ログ（通常）: 要約と同じ階層に `YYYY-MM-DD-topic-raw.md`
+- 生ログ（複数 Agent）: 要約と同じディレクトリに `01-role-raw.md` のように番号 + ロール名 + `-raw.md` で置く。
 
 ## ADR テンプレ
 
@@ -60,6 +63,8 @@ Raw (必要な場合のみ)
 ここに生ログを貼る
 ```
 ````
+- メモ: 複数 Agent 議論では `logs/YYYY-MM-DD-topic/summary.md` を使い、生ログは同階層に `01-role-raw.md` 形式で配置する。
+
 
 ## 運用ルール
 
