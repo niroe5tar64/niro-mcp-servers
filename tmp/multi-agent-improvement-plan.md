@@ -9,11 +9,11 @@
 ## Phase 1: Skill/Command定義（最優先）
 
 ### 目的
-`/multi-agent-meeting` コマンドで議論を開始できるようにする
+`/discussion-forum` コマンドで議論を開始できるようにする
 
 ### 作成ファイル
 ```
-.claude/commands/multi-agent-meeting.md
+.claude/commands/discussion-forum.md
 ```
 
 ### 実装内容
@@ -32,9 +32,9 @@
    - logging.md の命名規約に従ってログ保存を提案
 
 ### 完了条件
-- [ ] `/multi-agent-meeting` で議論が開始できる
-- [ ] 入力なしでもデフォルト値で動作する
-- [ ] 終了時に要約が出力される
+- [x] `/discussion-forum` で議論が開始できる
+- [x] 入力なしでもデフォルト値で動作する
+- [x] 終了時に要約が出力される
 
 ---
 
@@ -126,9 +126,9 @@ Phase 1 → Phase 2 → Phase 3 → Phase 4
 
 Phase 1 を開始する場合は、以下を決定：
 
-1. コマンド名: `/multi-agent-meeting` でよいか？
-2. デフォルトロール: `facilitator + architect + ops-cost` でよいか？
-3. デフォルトターン上限: 5ターンでよいか？
+1. コマンド名: `/discussion-forum` に確定
+2. デフォルトロール: `facilitator + architect + ops-cost` に確定
+3. デフォルトターン上限: 5ターンに確定
 
 ---
 

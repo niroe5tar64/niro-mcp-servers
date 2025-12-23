@@ -4,10 +4,10 @@ allowed-tools: Bash(sed:*), Bash(cat:*), Bash(rg:*)
 argument-hint: [テーマ(任意)]
 ---
 
-# Multi-Agent Meeting
+# Discussion Forum
 
 ## 目的
-- `/multi-agent-meeting` で議論を起動し、7ステップのワークフローに沿って進行する。
+- `/discussion-forum` で議論を起動し、7ステップのワークフローに沿って進行する。
 - 最終的に `summary.template.md` 形式の要約と、ログ保存先の提案を出す。
 
 ## 入力
