@@ -1,0 +1,8 @@
+{
+  "name": "discussion-forum",
+  "description": "複数ロールによるAI議論（Multi-Agent Discussion）を起動するコマンドとガイド",
+  "version": "0.1.0",
+  "author": {
+    "name": "niro-mcp"
+  }
+}
