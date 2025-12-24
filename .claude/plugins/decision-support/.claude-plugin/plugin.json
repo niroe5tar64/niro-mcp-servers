@@ -1,0 +1,8 @@
+{
+  "name": "decision-support",
+  "description": "意思決定支援ツール：1対1の壁打ち（/discussion）と複数ロール議論（/discussion-forum）",
+  "version": "0.1.0",
+  "author": {
+    "name": "niro-mcp"
+  }
+}

@@ -1,12 +1,7 @@
 ---
 date: YYYY-MM-DD
 topic: <topic>
-participants:
-  - facilitator
-  - pm-ux
-  - architect
-  - ops-cost
-  - risk-security
+participants: [] # 参加者/ロールを記載
 tags: [] # docs/decisions/guide/tags.md から選択
 ---
 
