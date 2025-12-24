@@ -31,3 +31,9 @@ Thumbs.db
 # Bun
 .bun/
 bun.lockb
+
+# Codex (local state)
+.codex/
+!.codex/skills/
+!.codex/skills/**
+.codex/skills/.system/
