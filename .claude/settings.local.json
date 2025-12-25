@@ -1,4 +1,15 @@
 {
+  "extraKnownMarketplaces": {
+    "local-plugins": {
+      "source": {
+        "source": "directory",
+        "path": "."
+      }
+    }
+  },
+  "enabledPlugins": {
+    "decision-support@local-plugins": true
+  },
   "sandbox": {
     "enabled": false,
     "allowUnsandboxedCommands": true
