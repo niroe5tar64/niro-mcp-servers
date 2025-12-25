@@ -26,7 +26,7 @@ if git -C "$current_dir" rev-parse --git-dir > /dev/null 2>&1; then
     fi
 fi
 
-# Calculate context window usage percentage
+# Calculate context window usage percentage and absolute value
 context_info=""
 usage=$(echo "$input" | jq '.context_window.current_usage')
 if [ "$usage" != "null" ]; then
@@ -34,6 +34,12 @@ if [ "$usage" != "null" ]; then
     size=$(echo "$input" | jq '.context_window.context_window_size')
     if [ "$size" != "null" ] && [ "$size" -gt 0 ]; then
         pct=$((current * 100 / size))
+        # Format token count (k for thousands)
+        if [ "$current" -ge 1000 ]; then
+            tokens_display="$((current / 1000))k"
+        else
+            tokens_display="${current}"
+        fi
         # Color code based on usage: green < 50%, yellow < 80%, red >= 80%
         if [ "$pct" -lt 50 ]; then
             color=$(printf '\033[32m')
@@ -42,16 +48,20 @@ if [ "$usage" != "null" ]; then
         else
             color=$(printf '\033[31m')
         fi
-        context_info=" │ ${color}${pct}%%$(printf '\033[0m') ctx"
+        context_info=" │ ${color}${pct}%% (${tokens_display})$(printf '\033[0m')"
     fi
 fi
 
-# Output style indicator (only if not default)
-style_info=""
-if [ "$output_style" != "default" ]; then
-    style_info=" │ $(printf '\033[36m')$output_style$(printf '\033[0m')"
+# Extract session cost
+cost_info=""
+cost=$(echo "$input" | jq -r '.cost.total_cost_usd')
+if [ "$cost" != "null" ] && [ "$cost" != "0" ]; then
+    # Format cost to 2 decimal places
+    cost_formatted=$(printf "%.2f" "$cost")
+    cost_info=" │ \$${cost_formatted}"
 fi
 
 # Build the status line
-printf "$(printf '\033[35m')%s$(printf '\033[0m') │ $(printf '\033[34m')%s$(printf '\033[0m')%s%s%s\n" \
-    "$model" "$dir_name" "$git_info" "$context_info" "$style_info"
+# Format: [Model] Git │ Context │ Cost
+printf "$(printf '\033[0m')[$(printf '\033[36m')%s$(printf '\033[0m')]%s%s%s\n" \
+    "$model" "$git_info" "$context_info" "$cost_info"
