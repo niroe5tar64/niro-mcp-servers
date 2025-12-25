@@ -37,7 +37,7 @@
   "forwardPorts": [50301],
 
   // Post-create command
-  "postCreateCommand": "bun install",
+  "postCreateCommand": "bun install && cp /workspace/.devcontainer/statusline-command.sh ~/.claude/statusline-command.sh && chmod +x ~/.claude/statusline-command.sh && echo '{\"statusLine\":{\"type\":\"command\",\"command\":\"/home/bun/.claude/statusline-command.sh\"}}' > ~/.claude/settings.json",
 
   // Mount the host's .gitconfig, .claude, and .codex directories
   "mounts": [

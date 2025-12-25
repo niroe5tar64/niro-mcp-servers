@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     npm \
     locales \
+    jq \
     && rm -rf /var/lib/apt/lists/*
 
 # Generate and configure locales
