@@ -42,8 +42,6 @@
   // Mount the host's .gitconfig, .claude, and .codex directories
   "mounts": [
     "source=${localEnv:HOME}/.gitconfig,target=/home/bun/.gitconfig,type=bind,consistency=cached",
-    "source=${localEnv:HOME}/.ssh,target=/home/bun/.ssh,type=bind,consistency=cached,readonly",
-    "source=${localEnv:HOME}/.claude,target=/home/bun/.claude,type=bind,consistency=cached",
-    "source=${localEnv:HOME}/.codex,target=/home/bun/.codex,type=bind,consistency=cached"
+    "source=${localEnv:HOME}/.ssh,target=/home/bun/.ssh,type=bind,consistency=cached,readonly"
   ]
 }
