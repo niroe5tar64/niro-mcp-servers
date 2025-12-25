@@ -77,7 +77,25 @@ make dev-up
 1. コマンドパレット（Cmd/Ctrl + Shift + P）
 2. "Dev Containers: Rebuild Container"を実行
 
+### ~/.claudeディレクトリの永続化
+
+Docker named volume（`niro-mcp-claude-data`）を使用して`~/.claude`を永続化。
+これによりDevContainerのリビルド後もClaude Codeのプラグインが保持される。
+
+```json
+{
+  "mounts": [
+    "source=niro-mcp-claude-data,target=/home/bun/.claude,type=volume"
+  ]
+}
+```
+
+- ホストの`~/.claude`とは分離される
+- チーム共通の設定は`.claude/settings.local.json`で管理
+- volumeを削除するとプラグインの再インストールが必要
+
 ## Related Files
 - `.devcontainer/devcontainer.json`: DevContainer設定
 - `.devcontainer/statusline-command.sh`: statusline表示スクリプト
+- `.claude/settings.local.json`: プロジェクト共通のClaude Code設定
 - `Dockerfile.dev`: DevContainerのDockerfile

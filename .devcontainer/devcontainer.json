@@ -37,11 +37,12 @@
   "forwardPorts": [50301],
 
   // Post-create command
-  "postCreateCommand": "bun install && cp /workspace/.devcontainer/statusline-command.sh ~/.claude/statusline-command.sh && chmod +x ~/.claude/statusline-command.sh && echo '{\"statusLine\":{\"type\":\"command\",\"command\":\"/home/bun/.claude/statusline-command.sh\"}}' > ~/.claude/settings.json",
+  "postCreateCommand": "bun install && cp /workspace/.devcontainer/statusline-command.sh ~/.claude/statusline-command.sh && chmod +x ~/.claude/statusline-command.sh",
 
-  // Mount the host's .gitconfig, .claude, and .codex directories
+  // Mount the host's .gitconfig and .ssh directories
   "mounts": [
     "source=${localEnv:HOME}/.gitconfig,target=/home/bun/.gitconfig,type=bind,consistency=cached",
-    "source=${localEnv:HOME}/.ssh,target=/home/bun/.ssh,type=bind,consistency=cached,readonly"
+    "source=${localEnv:HOME}/.ssh,target=/home/bun/.ssh,type=bind,consistency=cached,readonly",
+    "source=niro-mcp-claude-data,target=/home/bun/.claude,type=volume"
   ]
 }

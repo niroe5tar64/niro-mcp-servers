@@ -1,0 +1,6 @@
+{
+  "enabledPlugins": {
+    "decision-support@niro-agent-plugins": true,
+    "git-ops@niro-agent-plugins": true
+  }
+}
