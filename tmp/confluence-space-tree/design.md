@@ -14,8 +14,6 @@
 - spaceKey（string, 必須）
 - pageId（string, 任意）: 指定時はそのページ配下のみを返す。
 
-注: summaryはspaceKeyのみ記載。v1でpageIdを含めるか要確認。
-
 ## 出力
 ```
 {
@@ -29,6 +27,8 @@
 PageNode = {
   id: string,
   title: string,
+  description?: string,   // ページに設定された説明（メタ情報）
+  excerpt?: string,       // ページ本文の抜粋（自動生成、先頭数百文字程度）
   children: PageNode[]
 }
 ```
@@ -92,7 +92,7 @@ GET {baseUrl}/api/v2/pages/{pageId}/children?limit=...&cursor=...
 - エラー変換（401/403/404/timeout）。
 
 ## 未確定事項
-- v1でpageIdを含めるか。
 - v2エンドポイントとクエリパラメータの確定。
 - ソート順（API順かタイトル順か）。
 - アーカイブページの扱い。
+- description/excerptがAPIレスポンスに含まれるか確認が必要。

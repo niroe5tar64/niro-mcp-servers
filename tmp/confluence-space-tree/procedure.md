@@ -6,13 +6,13 @@
    - スペース配下ページ一覧
    - ページ子一覧
    - ページネーションのcursor形式
+   - description/excerptの取得方法（expandパラメータ等）
 2. この環境のCONFLUENCE_BASE_URLに/wikiが含まれるか確認。
-3. v1でpageIdを含めるか決定（summaryと設計メモの差分を解消）。
 
 ## Phase 1: APIクライアント拡張
 1. `packages/confluence-content/src/lib/confluence-api.ts`にv2用型を追加:
    - SpaceSummary（id, key, name）
-   - PageSummary（id, title, parentId）
+   - PageSummary（id, title, parentId, description?, excerpt?）
    - PagedResponse（results, _links）
 2. _links.nextからcursorを抽出する共通ヘルパーを追加。
 3. 新規メソッドを追加:
@@ -27,8 +27,8 @@
 
 ## Phase 2: ツリー構築ヘルパー
 1. ツリー構築用の純粋関数を新規ファイルで実装:
-   - 入力: PageSummary[]
-   - 出力: PageNode[]
+   - 入力: PageSummary[]（id, title, parentId, description?, excerpt?）
+   - 出力: PageNode[]（id, title, description?, excerpt?, children）
 2. pageId指定時のサブツリー切り出しもここで対応。
 3. ソートは原則API順。要件があればタイトル順などに変更。
 
