@@ -4,6 +4,7 @@ ConfluenceページのコンテンツをMarkdown形式で取得するMCPサー�
 
 ## 機能
 
+- **ページツリー取得**: スペース配下のページ階層を本文なしで取得（get_space_tree）
 - **Markdown変換**: Confluenceページのレンダリング済みHTMLをクリーンなMarkdownに変換
 - **トークン削減**: 約50%のトークン削減を実現
 - **マクロ展開**: Confluenceマクロ（info、warning、codeなど）を適切に変換
@@ -36,7 +37,56 @@ Claude Desktopの設定に以下を追加：
 
 ## 使用方法
 
-サーバーは1つのツールを提供します：
+サーバーは2つのツールを提供します：
+
+### get_space_tree
+
+Confluenceスペース配下のページツリー構造を本文なしで取得します。ページIDを特定してから`get_confluence_page_markdown`を呼び出すための補助ツールです。
+
+**パラメータ:**
+- `spaceKey` (必須): Confluenceスペースキー（例: "TEAM", "DOCS"）
+- `pageId` (任意): 特定のページ配下のサブツリーを取得する場合に指定
+
+**使用例（スペース全体）:**
+
+```typescript
+{
+  "spaceKey": "TEAM"
+}
+```
+
+**使用例（特定ページ配下）:**
+
+```typescript
+{
+  "spaceKey": "TEAM",
+  "pageId": "2447941326"
+}
+```
+
+**レスポンス:**
+
+```json
+{
+  "spaceKey": "TEAM",
+  "spaceName": "チームスペース",
+  "pages": [
+    {
+      "id": "123",
+      "title": "親ページ",
+      "excerpt": "ページの抜粋...",
+      "children": [
+        {
+          "id": "456",
+          "title": "子ページ",
+          "excerpt": "子ページの抜粋...",
+          "children": []
+        }
+      ]
+    }
+  ]
+}
+```
 
 ### get_confluence_page_markdown
 

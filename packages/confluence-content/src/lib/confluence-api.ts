@@ -38,6 +38,49 @@ export interface ConfluencePageViewResponse {
   html: string;
 }
 
+/**
+ * CQL検索関連の型定義
+ */
+
+export interface Breadcrumb {
+  id: string;
+  title: string;
+  type: string;
+}
+
+export interface Ancestor {
+  id: string;
+  title: string;
+  type: string;
+}
+
+export interface ContentSpace {
+  key: string;
+  name: string;
+}
+
+export interface Content {
+  id: string;
+  type: string;
+  title: string;
+  space?: ContentSpace;
+  ancestors?: Ancestor[];
+}
+
+export interface SearchResult {
+  content: Content;
+  title: string;
+  excerpt?: string;
+  breadcrumbs?: Breadcrumb[];
+}
+
+export interface SearchPageResponse {
+  results: SearchResult[];
+  _links?: {
+    next?: string;
+  };
+}
+
 export class ConfluenceApiError extends Error {
   constructor(
     message: string,
@@ -234,6 +277,135 @@ export class ConfluenceApiClient {
 
       throw new ConfluenceApiError("Unknown error occurred", undefined, error);
     }
+  }
+
+  /**
+   * CQLクエリでコンテンツを検索
+   *
+   * @param cql - Confluence Query Language クエリ
+   * @param expand - 展開するフィールド（例: "ancestors,space"）
+   * @param cursor - ページネーション用カーソル
+   * @returns 検索結果
+   * @throws ConfluenceApiError - APIエラーが発生した場合
+   */
+  async searchContentByCql(
+    cql: string,
+    expand?: string,
+    cursor?: string,
+  ): Promise<SearchPageResponse> {
+    const params = new URLSearchParams({ cql });
+    if (expand) {
+      params.append("expand", expand);
+    }
+    if (cursor) {
+      params.append("cursor", cursor);
+    }
+    params.append("limit", "100"); // 1回のリクエストで多めに取得
+
+    const url = `${this.baseUrl}/rest/api/content/search?${params.toString()}`;
+
+    try {
+      const response = await this.fetchWithTimeout(url, {
+        method: "GET",
+        headers: {
+          Authorization: this.getAuthHeader(),
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        let errorResponse: unknown;
+
+        try {
+          const errorBody = await this.readResponseWithTimeout(
+            response,
+            (text) => JSON.parse(text),
+          );
+          errorResponse = errorBody;
+          if (
+            typeof errorBody === "object" &&
+            errorBody !== null &&
+            "message" in errorBody
+          ) {
+            errorMessage = String(errorBody.message);
+          }
+        } catch {
+          // JSONパースに失敗した場合はデフォルトメッセージを使用
+        }
+
+        throw new ConfluenceApiError(
+          errorMessage,
+          response.status,
+          errorResponse,
+        );
+      }
+
+      const data = (await this.readResponseWithTimeout(
+        response,
+        (text) => JSON.parse(text) as SearchPageResponse,
+      )) as SearchPageResponse;
+
+      return data;
+    } catch (error) {
+      if (error instanceof ConfluenceApiError) {
+        throw error;
+      }
+
+      if (error instanceof Error) {
+        throw new ConfluenceApiError(
+          `Network error: ${error.message}`,
+          undefined,
+          error,
+        );
+      }
+
+      throw new ConfluenceApiError("Unknown error occurred", undefined, error);
+    }
+  }
+
+  /**
+   * CQLクエリで全コンテンツを検索（ページネーション対応）
+   *
+   * @param cql - Confluence Query Language クエリ
+   * @param expand - 展開するフィールド（例: "ancestors,space"）
+   * @returns すべての検索結果
+   * @throws ConfluenceApiError - APIエラーが発生した場合
+   */
+  async searchAllContentByCql(
+    cql: string,
+    expand?: string,
+  ): Promise<SearchResult[]> {
+    let allResults: SearchResult[] = [];
+    let cursor: string | undefined;
+    let loopCount = 0;
+    const maxLoops = 1000; // 無限ループ防止
+
+    do {
+      if (loopCount >= maxLoops) {
+        throw new ConfluenceApiError(
+          `Pagination loop limit reached (${maxLoops})`,
+          undefined,
+        );
+      }
+
+      const response = await this.searchContentByCql(cql, expand, cursor);
+      allResults = [...allResults, ...response.results];
+
+      // 次のページのカーソルを取得
+      const nextUrl = response._links?.next;
+      if (nextUrl) {
+        // URLからcursorパラメータを抽出
+        const url = new URL(nextUrl, this.baseUrl);
+        cursor = url.searchParams.get("cursor") || undefined;
+      } else {
+        cursor = undefined;
+      }
+
+      loopCount++;
+    } while (cursor);
+
+    return allResults;
   }
 
   /**

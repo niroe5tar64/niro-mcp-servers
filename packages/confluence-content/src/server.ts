@@ -15,6 +15,11 @@ import {
   getPageMarkdownTool,
   handleGetPageMarkdown,
 } from "./tools/get-page-markdown.js";
+import {
+  type GetSpaceTreeArgs,
+  getSpaceTreeTool,
+  handleGetSpaceTree,
+} from "./tools/get-space-tree.js";
 
 /**
  * MCPサーバーを作成・設定
@@ -48,7 +53,7 @@ export function createMcpServer(): Server {
    */
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
-      tools: [getPageMarkdownTool],
+      tools: [getPageMarkdownTool, getSpaceTreeTool],
     };
   });
 
@@ -62,6 +67,12 @@ export function createMcpServer(): Server {
     if (request.params.name === "get_confluence_page_markdown") {
       return handleGetPageMarkdown(
         request.params.arguments as unknown as GetPageMarkdownArgs,
+      );
+    }
+
+    if (request.params.name === "get_space_tree") {
+      return handleGetSpaceTree(
+        request.params.arguments as unknown as GetSpaceTreeArgs,
       );
     }
 
