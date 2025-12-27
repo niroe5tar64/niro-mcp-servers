@@ -1,38 +1,45 @@
-# CLAUDE.md
+# AI-DLC and Spec-Driven Development
 
-このファイルは、Claude Codeがこのリポジトリのコードを扱う際のガイダンスを提供します。
+Kiro-style Spec Driven Development implementation on AI-DLC (AI Development Life Cycle)
 
-## 概要
+## Project Context
 
-このプロジェクトは、AI Agentと社内システム（Confluence、JIRAなど）を接続するMCPサーバーのモノレポです。TypeScriptとBunランタイムを使用しています。
+### Paths
+- Steering: `.kiro/steering/`
+- Specs: `.kiro/specs/`
 
-## コマンド
+### Steering vs Specification
 
-```bash
-bun install              # 依存関係のインストール
-bun test                 # 全テストの実行
-bun run build            # 全パッケージのビルド
-bun run check            # Biomeでのリントとフォーマット（自動修正）
-```
+**Steering** (`.kiro/steering/`) - Guide AI with project-wide rules and context
+**Specs** (`.kiro/specs/`) - Formalize development process for individual features
 
-```bash
-make dev-up              # DevContainerを起動
-make dev-shell           # DevContainer内でシェルを開く
-make mcp-up              # 全MCPサーバーを起動
-```
+### Active Specifications
+- Check `.kiro/specs/` for active specifications
+- Use `/kiro:spec-status [feature-name]` to check progress
 
-## パッケージ構成
+## Development Guidelines
+- Think in English, generate responses in Japanese. All Markdown content written to project files (e.g., requirements.md, design.md, tasks.md, research.md, validation reports) MUST be written in the target language configured for this specification (see spec.json.language).
 
-- `packages/confluence-content/` - Confluenceコンテンツ用MCPサーバー
-- `packages/shared/confluence-cleaner/` - HTML→Markdownコンバーター
-- `packages/shared/mcp-server-core/` - MCPサーバー用トランスポート層
+## Minimal Workflow
+- Phase 0 (optional): `/kiro:steering`, `/kiro:steering-custom`
+- Phase 1 (Specification):
+  - `/kiro:spec-init "description"`
+  - `/kiro:spec-requirements {feature}`
+  - `/kiro:validate-gap {feature}` (optional: for existing codebase)
+  - `/kiro:spec-design {feature} [-y]`
+  - `/kiro:validate-design {feature}` (optional: design review)
+  - `/kiro:spec-tasks {feature} [-y]`
+- Phase 2 (Implementation): `/kiro:spec-impl {feature} [tasks]`
+  - `/kiro:validate-impl {feature}` (optional: after implementation)
+- Progress check: `/kiro:spec-status {feature}` (use anytime)
 
-詳細な開発ガイドラインは `.claude/rules/` を参照。
+## Development Rules
+- 3-phase approval workflow: Requirements → Design → Tasks → Implementation
+- Human review required each phase; use `-y` only for intentional fast-track
+- Keep steering current and verify alignment with `/kiro:spec-status`
+- Follow the user's instructions precisely, and within that scope act autonomously: gather the necessary context and complete the requested work end-to-end in this run, asking questions only when essential information is missing or the instructions are critically ambiguous.
 
-## DevContainer環境
-
-このプロジェクトはDevContainer内でClaude Codeを実行するように設計されています。
-
-- `.devcontainer/bin/claude`が自動的に`--dangerously-skip-permissions`を追加
-- 安全性は`.claude/settings.local.json`のPreToolUseフックで確保
-- 破壊的なgitコマンド（`git reset --hard`、`git push --force`など）はブロック
+## Steering Configuration
+- Load entire `.kiro/steering/` as project memory
+- Default files: `product.md`, `tech.md`, `structure.md`
+- Custom files are supported (managed via `/kiro:steering-custom`)
