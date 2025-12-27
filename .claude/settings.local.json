@@ -1,14 +1,8 @@
 {
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/statusline-command.sh"
-  },
-  "sandbox": {
-    "enabled": false,
-    "allowUnsandboxedCommands": true
-  },
   "permissions": {
-    "allow": ["*"],
+    "allow": [
+      "*"
+    ],
     "deny": [
       "Bash(rm -rf /)",
       "Bash(rm -r -f /)",
@@ -55,5 +49,14 @@
         ]
       }
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline-command.sh"
+  },
+  "enabledPlugins": {},
+  "sandbox": {
+    "enabled": false,
+    "allowUnsandboxedCommands": true
   }
 }
