@@ -36,6 +36,9 @@
   // Port forwarding
   "forwardPorts": [50301],
 
+  // Initialize command (runs on host before container starts)
+  "initializeCommand": "test -f packages/confluence-content/.env || cp packages/confluence-content/.env.template packages/confluence-content/.env",
+
   // Post-create command
   "postCreateCommand": "bun install && cp /workspace/.devcontainer/statusline-command.sh ~/.claude/statusline-command.sh && chmod +x ~/.claude/statusline-command.sh",
 
