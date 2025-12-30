@@ -28,6 +28,12 @@ Thumbs.db
 *.swo
 *~
 
+# Temporary diff/patch files
+*.diff
+*.patch
+*.orig
+*.rej
+
 # Bun
 .bun/
 bun.lockb
