@@ -22,8 +22,13 @@ COPY --from=install /app/node_modules ./node_modules
 COPY --from=build /app/packages ./packages
 COPY package.json ./
 
+# Rename bun user to dev-user
+RUN usermod -l dev-user bun && \
+    groupmod -n dev-user bun && \
+    usermod -d /home/dev-user -m dev-user
+
 # Run as non-root user
-USER bun
+USER dev-user
 EXPOSE 50301
 
 # Default command (override in docker-compose for specific servers)

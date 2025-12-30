@@ -12,9 +12,9 @@ services:
       # Mount source code
       - .:/workspace:cached
       # Persist Bun cache for faster installs
-      - bun-cache:/home/bun/.bun
+      - dev-user-cache:/home/dev-user/.bun
       # Persist git configuration
-      - bun-config:/home/bun/.config
+      - dev-user-config:/home/dev-user/.config
     environment:
       - NODE_ENV=development
       - TERM=xterm-256color
@@ -53,9 +53,9 @@ networks:
     driver: bridge
 
 volumes:
-  bun-cache:
+  dev-user-cache:
     driver: local
-  bun-config:
+  dev-user-config:
     driver: local
   # Named volumes to preserve node_modules from container build
   # These volumes are populated during docker build and persist across container runs

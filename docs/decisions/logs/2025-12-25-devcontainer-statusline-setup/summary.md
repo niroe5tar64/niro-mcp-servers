@@ -52,7 +52,7 @@ RUN apt-get update && apt-get install -y \
 #### 3. devcontainer.json
 ```json
 {
-  "postCreateCommand": "bun install && cp /workspace/.devcontainer/statusline-command.sh ~/.claude/statusline-command.sh && chmod +x ~/.claude/statusline-command.sh && echo '{\"statusLine\":{\"type\":\"command\",\"command\":\"/home/bun/.claude/statusline-command.sh\"}}' > ~/.claude/settings.json"
+  "postCreateCommand": "bun install && cp /workspace/.devcontainer/statusline-command.sh ~/.claude/statusline-command.sh && chmod +x ~/.claude/statusline-command.sh && echo '{\"statusLine\":{\"type\":\"command\",\"command\":\"/home/dev-user/.claude/statusline-command.sh\"}}' > ~/.claude/settings.json"
 }
 ```
 
@@ -85,7 +85,7 @@ Docker named volume（`niro-mcp-claude-data`）を使用して`~/.claude`を永�
 ```json
 {
   "mounts": [
-    "source=niro-mcp-claude-data,target=/home/bun/.claude,type=volume"
+    "source=niro-mcp-claude-data,target=/home/dev-user/.claude,type=volume"
   ]
 }
 ```

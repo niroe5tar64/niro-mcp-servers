@@ -27,7 +27,7 @@
   },
 
   // Container user
-  "remoteUser": "bun",
+  "remoteUser": "dev-user",
   "remoteEnv": {
     "PATH": "/workspace/.devcontainer/bin:${containerEnv:PATH}",
     "CODEX_HOME": "/workspace/.codex"
@@ -44,8 +44,8 @@
 
   // Mount the host's .gitconfig and .ssh directories
   "mounts": [
-    "source=${localEnv:HOME}/.gitconfig,target=/home/bun/.gitconfig,type=bind,consistency=cached",
-    "source=${localEnv:HOME}/.ssh,target=/home/bun/.ssh,type=bind,consistency=cached,readonly",
-    "source=niro-mcp-claude-data,target=/home/bun/.claude,type=volume"
+    "source=${localEnv:HOME}/.gitconfig,target=/home/dev-user/.gitconfig,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.ssh,target=/home/dev-user/.ssh,type=bind,consistency=cached,readonly",
+    "source=niro-mcp-claude-data,target=/home/dev-user/.claude,type=volume"
   ]
 }

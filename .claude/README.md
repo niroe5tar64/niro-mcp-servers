@@ -59,7 +59,7 @@ CLAUDE_SETTINGS_PATH=/workspace/.claude/settings.json
 （個人の `$HOME/.claude/settings.json` は使用されません）。
 
 ### 実行ユーザー
-- DevContainer の `remoteUser` は `bun`
+- DevContainer の `remoteUser` は `dev-user`
 - Hook や Claude Code は **非 root** で実行されます
 
 ### SSH キーの扱い
