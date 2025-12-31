@@ -1,51 +1,68 @@
 {
-  "name": "Niro MCP Servers Dev Environment",
-  "dockerComposeFile": "../docker-compose.dev.yml",
-  "service": "devcontainer",
-  "workspaceFolder": "/workspace",
-
-  // VS Code customizations
+  "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    },
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "installOhMyZsh": true,
+      "upgradePackages": true,
+      "timezone": "Asia/Tokyo",
+      "username": "dev-user"
+    }
+  },
   "customizations": {
     "vscode": {
       "extensions": [
-        "oven.bun-vscode",
-        "dbaeumer.vscode-eslint",
-        "biomejs.biome",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "anthropic.claude-code",
+        "eamodio.gitlens",
         "mhutchie.git-graph",
+        "usernamehw.errorlens",
+        "wayou.vscode-todo-highlight",
+        "biomejs.biome",
+        "oven.bun-vscode",
         "bierner.markdown-mermaid"
       ],
       "settings": {
-        "terminal.integrated.defaultProfile.linux": "bash",
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "biomejs.biome"
+        "editor.defaultFormatter": "biomejs.biome",
+        "editor.codeActionsOnSave": {
+          "source.fixAll": "explicit"
+        },
+        "files.autoSave": "onFocusChange",
+        "files.trimTrailingWhitespace": true,
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "git.autofetch": true,
+        "git.confirmSync": false
       }
     }
   },
-
   "containerEnv": {
-    "CLAUDE_SETTINGS_PATH": "/workspace/.claude/settings.json"
+    "CLAUDE_SETTINGS_PATH": "/workspace/.claude/settings.json",
+    "TZ": "Asia/Tokyo"
   },
-
-  // Container user
-  "remoteUser": "dev-user",
   "remoteEnv": {
-    "PATH": "/workspace/.devcontainer/bin:${containerEnv:PATH}",
-    "CODEX_HOME": "/workspace/.codex"
+    "PATH": "/home/dev-user/.local/bin:/home/dev-user/.bun/bin:${containerEnv:PATH}"
   },
-
-  // Port forwarding
-  "forwardPorts": [50301],
-
-  // Initialize command (runs on host before container starts)
-  "initializeCommand": "test -f packages/confluence-content/.env || cp packages/confluence-content/.env.template packages/confluence-content/.env",
-
-  // Post-create command
-  "postCreateCommand": "bun install && cp /workspace/.devcontainer/statusline-command.sh ~/.claude/statusline-command.sh && chmod +x ~/.claude/statusline-command.sh",
-
-  // Mount the host's .gitconfig and .ssh directories
   "mounts": [
     "source=${localEnv:HOME}/.gitconfig,target=/home/dev-user/.gitconfig,type=bind,consistency=cached",
     "source=${localEnv:HOME}/.ssh,target=/home/dev-user/.ssh,type=bind,consistency=cached,readonly",
-    "source=niro-mcp-claude-data,target=/home/dev-user/.claude,type=volume"
-  ]
+    "source=${localEnv:HOME}/.claude,target=/home/dev-user/.claude,type=bind",
+    "source=${localEnv:HOME}/.codex,target=/home/dev-user/.codex,type=bind"
+  ],
+  "postCreateCommand": "bash .devcontainer/post-create.sh && bun install",
+  "remoteUser": "dev-user",
+  "name": "Niro MCP Servers Dev Environment",
+  "forwardPorts": [50301],
+  "initializeCommand": "test -f packages/confluence-content/.env || cp packages/confluence-content/.env.template packages/confluence-content/.env"
 }

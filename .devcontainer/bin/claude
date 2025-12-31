@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# PATHの先頭にこのラッパーがいる想定なので、which -a で「2つ目」を本体として拾う
-real="$(which -a claude | awk 'NR==2{print; exit}')"
+# VS Code Claude extension のバイナリを動的に探す
+# $HOME を使用してユーザー非依存に
+real=$(find "$HOME/.vscode-server/extensions" -name "claude" -path "*/resources/native-binary/claude" -type f 2>/dev/null | head -1) || true
 
 if [ -z "${real:-}" ] || [ ! -x "$real" ]; then
-  echo "Error: real claude binary not found (wrapper may be shadowing only one entry in PATH)." >&2
+  echo "Error: real claude binary not found in VS Code extensions directory" >&2
+  echo "Hint: Ensure the Claude Code extension is installed in VS Code" >&2
   exit 127
 fi
 

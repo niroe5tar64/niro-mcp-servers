@@ -1,14 +1,56 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# PATHの先頭にこのラッパーがいる想定なので、which -a で「2つ目」を本体として拾う
-real="$(which -a codex | awk 'NR==2{print; exit}')"
+# Allow overrides from the environment for sandbox/approval behavior.
+SANDBOX_MODE="${CODEX_SANDBOX:-workspace-write}"
+APPROVAL_MODE="${CODEX_APPROVAL:-never}"
+
+# If Landlock is unavailable, fall back to no-sandbox to avoid startup failure.
+if [ "$SANDBOX_MODE" != "danger-full-access" ]; then
+  if [ ! -e /proc/self/attr/landlock ] && [ ! -e /sys/kernel/security/landlock ]; then
+    SANDBOX_MODE="danger-full-access"
+  fi
+fi
+
+# PATHの先頭にこのラッパーがいる想定なので、which -a で「本物」を探す
+# 他のbashラッパーをスキップして、実際のバイナリ（.js等）を見つける
+real=""
+this_script="$(readlink -f "$0")"
+while IFS= read -r candidate; do
+  # 自分自身をスキップ（絶対パスで比較）
+  candidate_path="$(readlink -f "$candidate")"
+  if [ "$candidate_path" = "$this_script" ]; then
+    continue
+  fi
+  # ファイルの1行目を確認し、bashスクリプトでない場合は採用
+  first_line="$(head -n 1 "$candidate" 2>/dev/null || true)"
+  if [[ ! "$first_line" =~ ^#!.*bash ]]; then
+    real="$candidate"
+    break
+  fi
+done < <(which -a codex)
 
 if [ -z "${real:-}" ] || [ ! -x "$real" ]; then
-  echo "Error: real codex binary not found (wrapper may be shadowing only one entry in PATH)." >&2
+  echo "Error: real codex binary not found (all entries appear to be bash wrappers)." >&2
   echo "Hint: run: which -a codex" >&2
   exit 127
 fi
 
-# 常に「承認なし + サンドボックス完全無効」で実行 (--yolo)
-exec "$real" --yolo "$@"
+# 念のため、オプションはサブコマンドより前に付与する
+# ログイン状態を確認（login/logoutコマンド以外の場合）
+if [ "${1:-}" != "login" ] && [ "${1:-}" != "logout" ]; then
+  # ログイン状態をチェック（exit code 0 = ログイン済み, 1 = 未ログイン）
+  if ! "$real" login status &>/dev/null; then
+    echo "Not logged in. Logging in with device authentication..." >&2
+    "$real" --sandbox "$SANDBOX_MODE" --ask-for-approval "$APPROVAL_MODE" login --device-auth
+  fi
+fi
+
+# loginコマンドの場合はデバイスコード認証を使用（DevContainer環境向け）
+if [ "${1:-}" = "login" ]; then
+  # ブラウザベース認証が動作しないため、デバイスコード認証を使用
+  exec "$real" --sandbox "$SANDBOX_MODE" --ask-for-approval "$APPROVAL_MODE" login --device-auth "${@:2}"
+else
+  # その他のコマンドは sandbox=workspace-write + approval=never で実行
+  exec "$real" --sandbox "$SANDBOX_MODE" --ask-for-approval "$APPROVAL_MODE" "$@"
+fi
