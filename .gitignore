@@ -38,6 +38,9 @@ Thumbs.db
 .bun/
 bun.lockb
 
+# Claude Code local overrides
+.claude/settings.local.json
+
 # Codex (local state)
 .codex/
 !.codex/skills/
