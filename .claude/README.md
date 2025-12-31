@@ -52,7 +52,7 @@
 ### 設定ファイルの固定
 DevContainer では、以下の環境変数を設定しています：
 ```
-CLAUDE_SETTINGS_PATH=/workspaces/.claude/settings.json
+CLAUDE_SETTINGS_PATH=/workspaces/niro-mcp-servers/.claude/settings.json
 ```
 
 これにより、deny-check.sh は必ず repo の設定ファイルを参照します

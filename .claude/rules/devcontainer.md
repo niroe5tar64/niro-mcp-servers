@@ -18,10 +18,10 @@ Claude Codeの設定は2つの場所で管理されます：
 
 ### チーム共有設定
 
-- **場所**: `/workspaces/.claude/settings.json`
+- **場所**: `/workspaces/niro-mcp-servers/.claude/settings.json`
 - **管理方法**: Git（リポジトリにコミット）
 - **用途**: プラグイン、MCPサーバーなど、チーム全体で共有すべき設定
-- **環境変数**: `CLAUDE_SETTINGS_PATH=/workspaces/.claude/settings.json`
+- **環境変数**: `CLAUDE_SETTINGS_PATH=/workspaces/niro-mcp-servers/.claude/settings.json`
 
 ### 個人設定
 
@@ -66,15 +66,15 @@ statuslineスクリプトは**チーム共有設定**として管理され、以
 
 # 2. DevContainer起動時（post-create.sh）
 #    .devcontainer/statusline-command.sh
-#    → /workspaces/.claude/statusline-command.sh にコピー
+#    → /workspaces/niro-mcp-servers/.claude/statusline-command.sh にコピー
 
-# 3. Claude Code が /workspaces/.claude/statusline-command.sh を実行
+# 3. Claude Code が /workspaces/niro-mcp-servers/.claude/statusline-command.sh を実行
 #    (.claude/settings.json で指定)
 ```
 
 **配置場所**:
 - **ソース**: `.devcontainer/shared/.devcontainer/statusline-command.sh`（サブモジュール）
-- **実行時**: `/workspaces/.claude/statusline-command.sh`（Git管理、チーム共有）
+- **実行時**: `/workspaces/niro-mcp-servers/.claude/statusline-command.sh`（Git管理、チーム共有）
 
 **手動セットアップは不要**です。DevContainerを起動すれば自動的に設定されます。
 
@@ -129,8 +129,8 @@ make dev-up
 ### statuslineが表示されない
 
 1. `jq`がインストールされているか確認: `which jq`
-2. スクリプトが存在するか確認: `ls -la /workspaces/.claude/statusline-command.sh`
-3. スクリプトの実行権限を確認: `chmod +x /workspaces/.claude/statusline-command.sh`
+2. スクリプトが存在するか確認: `ls -la /workspaces/niro-mcp-servers/.claude/statusline-command.sh`
+3. スクリプトの実行権限を確認: `chmod +x /workspaces/niro-mcp-servers/.claude/statusline-command.sh`
 4. `.claude/settings.json`のstatusLineパスが正しいか確認
 
 ### volumeをリセットしたい場合

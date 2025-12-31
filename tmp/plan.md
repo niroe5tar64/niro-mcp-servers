@@ -234,7 +234,7 @@ rm docker-compose.dev.yml
    # Claude Code設定
    cat ~/.claude/settings.json
    # または
-   cat /workspaces/.claude/settings.json
+   cat /workspaces/niro-mcp-servers/.claude/settings.json
    ```
 
 ---
