@@ -32,7 +32,7 @@ packages/<server-name>/
 
 ## 共有ライブラリ
 
-内部依存は`workspace:*`で参照：
+内部依存は `workspace:*` プロトコルで参照：
 
 ```json
 {
