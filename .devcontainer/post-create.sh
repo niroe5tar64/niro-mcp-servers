@@ -3,6 +3,8 @@ set -e
 
 # スクリプトのディレクトリを取得（サブモジュール対応）
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# プロジェクトルートを取得（SCRIPT_DIRの親ディレクトリ）
+PROJECT_ROOT="$(dirname "${SCRIPT_DIR}")"
 
 # Update system packages
 sudo apt-get update
@@ -53,7 +55,7 @@ fi
 # Setup Claude Code statusline (team-shared configuration)
 if [ -f "${SCRIPT_DIR}/statusline-command.sh" ]; then
     echo "Setting up Claude Code statusline..."
-    mkdir -p /workspaces/.claude
-    cp "${SCRIPT_DIR}/statusline-command.sh" /workspaces/.claude/statusline-command.sh
-    chmod +x /workspaces/.claude/statusline-command.sh
+    mkdir -p "${PROJECT_ROOT}/.claude"
+    cp "${SCRIPT_DIR}/statusline-command.sh" "${PROJECT_ROOT}/.claude/statusline-command.sh"
+    chmod +x "${PROJECT_ROOT}/.claude/statusline-command.sh"
 fi

@@ -48,7 +48,7 @@
     }
   },
   "containerEnv": {
-    "CLAUDE_SETTINGS_PATH": "/workspaces/.claude/settings.json",
+    "CLAUDE_SETTINGS_PATH": "${containerWorkspaceFolder}/.claude/settings.json",
     "TZ": "Asia/Tokyo"
   },
   "remoteEnv": {
@@ -63,6 +63,8 @@
   "postCreateCommand": "bash .devcontainer/post-create.sh && bun install",
   "remoteUser": "dev-user",
   "name": "Niro MCP Servers Dev Environment",
-  "forwardPorts": [50301],
+  "forwardPorts": [
+    50301
+  ],
   "initializeCommand": "test -f packages/confluence-content/.env || cp packages/confluence-content/.env.template packages/confluence-content/.env"
 }
