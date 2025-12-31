@@ -1,0 +1,65 @@
+# Development Dockerfile for Dev Container
+# This provides a safe, isolated environment for Claude Code with Dangerous Skip mode
+
+FROM oven/bun:1 AS development
+
+# Install development tools and utilities
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    vim-tiny \
+    less \
+    procps \
+    sudo \
+    tree \
+    ca-certificates \
+    npm \
+    locales \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Generate and configure locales
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
+    locale-gen && \
+    update-locale LANG=en_US.UTF-8
+
+# Install Claude Code & Codex globally
+RUN npm install -g @anthropic-ai/claude-code@latest
+RUN npm install -g @openai/codex@latest
+
+# Rename bun user to dev-user
+RUN usermod -l dev-user bun && \
+    groupmod -n dev-user bun && \
+    usermod -d /home/dev-user -m dev-user
+
+# Set up sudo for dev-user (useful for installing additional tools)
+RUN echo "dev-user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/dev-user \
+    && chmod 0440 /etc/sudoers.d/dev-user
+
+# Set working directory
+WORKDIR /workspace
+
+# Configure git to trust the workspace directory
+RUN git config --global --add safe.directory /workspace
+
+# Set up Bun environment
+ENV BUN_INSTALL=/home/dev-user/.bun
+ENV PATH=$BUN_INSTALL/bin:$PATH
+
+# Set locale environment variables
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+
+# Create .claude directory structure with proper permissions
+RUN mkdir -p /home/dev-user/.claude/{todos,debug,commands} \
+    && chown -R dev-user:dev-user /home/dev-user/.claude
+
+# Switch to dev-user
+USER dev-user
+
+# Set up shell
+RUN echo 'export PS1="\[\033[01;32m\]\u@devcontainer\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> /home/dev-user/.bashrc \
+    && echo 'cd /workspace' >> /home/dev-user/.bashrc
+
+# Default command - keep container running
+CMD ["sleep", "infinity"]
