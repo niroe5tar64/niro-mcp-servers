@@ -18,16 +18,16 @@ Claude Codeの設定は2つの場所で管理されます：
 
 ### チーム共有設定
 
-- **場所**: `/workspace/.claude/settings.json`
+- **場所**: `/workspaces/.claude/settings.json`
 - **管理方法**: Git（リポジトリにコミット）
 - **用途**: プラグイン、MCPサーバーなど、チーム全体で共有すべき設定
-- **環境変数**: `CLAUDE_SETTINGS_PATH=/workspace/.claude/settings.json`
+- **環境変数**: `CLAUDE_SETTINGS_PATH=/workspaces/.claude/settings.json`
 
 ### 個人設定
 
 - **場所**: `~/.claude/`
 - **管理方法**: Docker volume（`niro-mcp-claude-data`）
-- **用途**: statuslineスクリプト、個人的なカスタマイズ
+- **用途**: 個人的なカスタマイズ
 - **永続化**: DevContainer再構築後も保持される
 
 ## プラグイン管理
@@ -57,12 +57,26 @@ Claude Code内で`/plugin`コマンドを使用。
 
 ## statusline設定
 
-statuslineスクリプトは`postCreateCommand`で自動セットアップされます：
+statuslineスクリプトは**チーム共有設定**として管理され、以下の流れで自動セットアップされます：
 
 ```bash
-cp /workspace/.devcontainer/statusline-command.sh ~/.claude/statusline-command.sh
-chmod +x ~/.claude/statusline-command.sh
+# 1. bun run build:client 時
+#    .devcontainer/shared/.devcontainer/statusline-command.sh
+#    → .claude/statusline-command.sh にコピー
+
+# 2. DevContainer起動時（post-create.sh）
+#    .devcontainer/statusline-command.sh
+#    → /workspaces/.claude/statusline-command.sh にコピー
+
+# 3. Claude Code が /workspaces/.claude/statusline-command.sh を実行
+#    (.claude/settings.json で指定)
 ```
+
+**配置場所**:
+- **ソース**: `.devcontainer/shared/.devcontainer/statusline-command.sh`（サブモジュール）
+- **実行時**: `/workspaces/.claude/statusline-command.sh`（Git管理、チーム共有）
+
+**手動セットアップは不要**です。DevContainerを起動すれば自動的に設定されます。
 
 **表示内容**:
 ```
@@ -88,9 +102,9 @@ make dev-up
 ```
 
 DevContainer起動時に以下が自動実行されます：
-1. `bun install`: 依存関係のインストール
-2. statuslineスクリプトのコピーと実行権限付与
-3. 環境変数の設定
+1. 開発ツールのインストール（bun, Claude Code, Codex等）
+2. statuslineスクリプトのセットアップ
+3. `bun install`: 依存関係のインストール
 
 ### 再構築が必要な場合
 
@@ -115,8 +129,9 @@ make dev-up
 ### statuslineが表示されない
 
 1. `jq`がインストールされているか確認: `which jq`
-2. スクリプトが存在するか確認: `ls -la ~/.claude/statusline-command.sh`
-3. スクリプトの実行権限を確認: `chmod +x ~/.claude/statusline-command.sh`
+2. スクリプトが存在するか確認: `ls -la /workspaces/.claude/statusline-command.sh`
+3. スクリプトの実行権限を確認: `chmod +x /workspaces/.claude/statusline-command.sh`
+4. `.claude/settings.json`のstatusLineパスが正しいか確認
 
 ### volumeをリセットしたい場合
 

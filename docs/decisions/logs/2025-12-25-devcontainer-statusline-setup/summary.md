@@ -52,7 +52,7 @@ RUN apt-get update && apt-get install -y \
 #### 3. devcontainer.json
 ```json
 {
-  "postCreateCommand": "bun install && cp /workspace/.devcontainer/statusline-command.sh ~/.claude/statusline-command.sh && chmod +x ~/.claude/statusline-command.sh && echo '{\"statusLine\":{\"type\":\"command\",\"command\":\"/home/dev-user/.claude/statusline-command.sh\"}}' > ~/.claude/settings.json"
+  "postCreateCommand": "bun install && cp /workspaces/.devcontainer/statusline-command.sh ~/.claude/statusline-command.sh && chmod +x ~/.claude/statusline-command.sh && echo '{\"statusLine\":{\"type\":\"command\",\"command\":\"/home/dev-user/.claude/statusline-command.sh\"}}' > ~/.claude/settings.json"
 }
 ```
 

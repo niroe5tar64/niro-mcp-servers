@@ -1,7 +1,7 @@
 # Claude Code – Safe Hooks / Permissions（DevContainer 運用）
 
-このリポジトリでは、Claude Code を  
-`--dangerously-skip-permissions` 付きで利用する前提のもと、  
+このリポジトリでは、Claude Code を
+`--dangerously-skip-permissions` 付きで利用する前提のもと、
 **PreToolUse Hook によって Bash コマンドの一部を強制的に拒否**する構成を採用しています。
 
 目的は、利便性を落とさずに「うっかり事故」や「致命的な破壊操作」だけを防ぐことです。
@@ -34,7 +34,7 @@
 
 - deny ルールと Hook 設定を定義します
 - DevContainer では **必ず repo のこのファイルを使用**します
-- `permissions.allow` は `"*"`（すべて許可）とし、  
+- `permissions.allow` は `"*"`（すべて許可）とし、
   実際の制御は deny-check.sh に委ねます
 
 ### `.claude/scripts/deny-check.sh`
@@ -52,10 +52,10 @@
 ### 設定ファイルの固定
 DevContainer では、以下の環境変数を設定しています：
 ```
-CLAUDE_SETTINGS_PATH=/workspace/.claude/settings.json
+CLAUDE_SETTINGS_PATH=/workspaces/.claude/settings.json
 ```
 
-これにより、deny-check.sh は必ず repo の設定ファイルを参照します  
+これにより、deny-check.sh は必ず repo の設定ファイルを参照します
 （個人の `$HOME/.claude/settings.json` は使用されません）。
 
 ### 実行ユーザー
@@ -73,7 +73,7 @@ DevContainer 内では、`claude` コマンドは **必ず**
 
 ### 仕組み
 
-- リポジトリ内に `claude` コマンドの **ラッパースクリプト**を配置しています  
+- リポジトリ内に `claude` コマンドの **ラッパースクリプト**を配置しています
   - パス: `.devcontainer/bin/claude`
 - DevContainer 起動時に、このディレクトリを `PATH` の先頭に追加しています
 - その結果、DevContainer 内で `claude` を実行すると：
@@ -159,5 +159,5 @@ DevContainer 内では、`claude` コマンドは **必ず**
 - 悪意ある回避を完全に防ぐものではありません
 - しかし、**日常開発における重大事故の確率を大きく下げる**ことを目的としています
 
-「便利さを維持したまま、致命傷だけを防ぐ」  
+「便利さを維持したまま、致命傷だけを防ぐ」
 そのための現実的な落とし所です。

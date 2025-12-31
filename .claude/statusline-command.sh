@@ -48,7 +48,7 @@ if [ "$usage" != "null" ]; then
         else
             color=$(printf '\033[31m')
         fi
-        context_info=" │ ${color}${pct}%% (${tokens_display})$(printf '\033[0m')"
+        context_info=" │ ${color}${pct}% (${tokens_display})$(printf '\033[0m')"
     fi
 fi
 

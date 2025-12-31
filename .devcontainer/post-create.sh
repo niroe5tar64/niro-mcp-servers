@@ -49,3 +49,11 @@ if ! git config --global --get credential.helper &> /dev/null; then
     echo "Configuring git credential helper..."
     git config --global credential.helper store 2> /dev/null || true
 fi
+
+# Setup Claude Code statusline (team-shared configuration)
+if [ -f "${SCRIPT_DIR}/statusline-command.sh" ]; then
+    echo "Setting up Claude Code statusline..."
+    mkdir -p /workspaces/.claude
+    cp "${SCRIPT_DIR}/statusline-command.sh" /workspaces/.claude/statusline-command.sh
+    chmod +x /workspaces/.claude/statusline-command.sh
+fi
