@@ -5,6 +5,8 @@
 peer = true
 # Hoist dependencies to root node_modules
 auto = "auto"
+# Use binary lockfile format
+lockfile = "bun.lockb"
 
 [test]
 # Test configuration

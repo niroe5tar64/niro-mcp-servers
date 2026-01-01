@@ -19,7 +19,7 @@ services:
       - node_modules_shared_core:/app/packages/shared/mcp-server-core/node_modules
       # Mount root package.json and lock files for workspace resolution
       - ./package.json:/app/package.json
-      - ./bun.lock:/app/bun.lock
+      - ./bun.lockb:/app/bun.lockb
       - ./bunfig.toml:/app/bunfig.toml
     env_file:
       # Load environment variables from packages/confluence-content/.env
