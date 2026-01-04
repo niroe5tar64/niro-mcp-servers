@@ -6,6 +6,7 @@
 - **検証日**: 2026-01-01
 - **標準ファイル数**: 37個（英語版のみ、日本語版は含まれない）
 - **日本語訳版**: 36個（プロジェクト独自の翻訳）
+- **Codex版プロンプト**: 11個（Codex CLI用に追加）
 
 ---
 
@@ -47,7 +48,25 @@
 .claude/commands/kiro/validate-impl.ja.md
 ```
 
-### 2. ルールファイル（18個）
+### 2. Codex プロンプトファイル（11個）
+
+**パス**: `.codex/prompts/`
+
+```
+.codex/prompts/kiro-spec-design.md
+.codex/prompts/kiro-spec-impl.md
+.codex/prompts/kiro-spec-init.md
+.codex/prompts/kiro-spec-requirements.md
+.codex/prompts/kiro-spec-status.md
+.codex/prompts/kiro-spec-tasks.md
+.codex/prompts/kiro-steering.md
+.codex/prompts/kiro-steering-custom.md
+.codex/prompts/kiro-validate-design.md
+.codex/prompts/kiro-validate-gap.md
+.codex/prompts/kiro-validate-impl.md
+```
+
+### 3. ルールファイル（18個）
 
 **パス**: `.kiro/settings/rules/`
 
@@ -77,7 +96,7 @@
 .kiro/settings/rules/tasks-parallel-analysis.ja.md
 ```
 
-### 3. Spec テンプレートファイル（11個）
+### 4. Spec テンプレートファイル（11個）
 
 **パス**: `.kiro/settings/templates/specs/`
 
@@ -100,7 +119,7 @@
 .kiro/settings/templates/specs/tasks.ja.md
 ```
 
-### 4. Steering テンプレートファイル（6個）
+### 5. Steering テンプレートファイル（6個）
 
 **パス**: `.kiro/settings/templates/steering/`
 
@@ -118,7 +137,7 @@
 .kiro/settings/templates/steering/tech.ja.md
 ```
 
-### 5. Steering Custom テンプレートファイル（14個）
+### 6. Steering Custom テンプレートファイル（14個）
 
 **パス**: `.kiro/settings/templates/steering-custom/`
 
@@ -146,7 +165,7 @@
 
 ---
 
-## コピー用リスト（全73ファイル）
+## コピー用リスト（全84ファイル）
 
 ### 全ファイルパス
 ```
@@ -174,6 +193,17 @@
 .claude/commands/kiro/validate-gap.ja.md
 .claude/commands/kiro/validate-impl.md
 .claude/commands/kiro/validate-impl.ja.md
+.codex/prompts/kiro-spec-design.md
+.codex/prompts/kiro-spec-impl.md
+.codex/prompts/kiro-spec-init.md
+.codex/prompts/kiro-spec-requirements.md
+.codex/prompts/kiro-spec-status.md
+.codex/prompts/kiro-spec-tasks.md
+.codex/prompts/kiro-steering.md
+.codex/prompts/kiro-steering-custom.md
+.codex/prompts/kiro-validate-design.md
+.codex/prompts/kiro-validate-gap.md
+.codex/prompts/kiro-validate-impl.md
 .kiro/settings/rules/design-discovery-full.md
 .kiro/settings/rules/design-discovery-full.ja.md
 .kiro/settings/rules/design-discovery-light.md
@@ -263,6 +293,8 @@ plugin-repo/
 ├── .claude/
 │   └── commands/
 │       └── kiro/           # 24 ファイル
+├── .codex/
+│   └── prompts/            # 11 ファイル
 ├── .kiro/
 │   └── settings/
 │       ├── rules/          # 18 ファイル
@@ -282,6 +314,12 @@ plugin-repo/
 cc-sddは、Claude Code、Cursor、Gemini CLI、Codex CLI、GitHub Copilot、Qwen Code、Windsurfなどの
 AIコーディングアシスタント向けのSpec-Driven Development (SDD) ワークフローを提供するツールです。
 
+**本プロジェクトの実装状況**:
+- Claude Code版コマンドファイル（24ファイル）✓ 実装済み
+- Codex CLI版プロンプトファイル（11ファイル）✓ 2026-01-05 追加
+- ルール、テンプレートファイル（49ファイル）✓ 実装済み
+
+**ワークフロー機能**:
 - 要件（Requirements）→ 設計（Design）→ タスク（Tasks）→ 実装（Implementation）の構造化されたワークフローを実現
 - ステアリング（Steering）機能でプロジェクト全体のコンテキストを管理
 - 検証（Validation）機能で品質を担保
