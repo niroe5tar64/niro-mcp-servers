@@ -8,6 +8,12 @@
 - **日本語訳版**: 36個（プロジェクト独自の翻訳）
 - **Codex版プロンプト**: 11個（Codex CLI用に追加）
 
+## 移動履歴
+
+| 日付 | 内容 | ファイル数 | 対象パス |
+|------|------|-----------|---------|
+| 2026-01-05 | 日本語訳版ファイルを tmp/cc-sdd に移動 | 36個 | `.ja.md` ファイル |
+
 ---
 
 ## 移動対象ファイル一覧
@@ -33,19 +39,21 @@
 ```
 
 #### 日本語訳版（12個）
+**状態**: ✓ 2026-01-05 に `tmp/cc-sdd/` に移動済み
+
 ```
-.claude/commands/kiro/spec-design.ja.md
-.claude/commands/kiro/spec-impl.ja.md
-.claude/commands/kiro/spec-init.ja.md
-.claude/commands/kiro/spec-quick.ja.md
-.claude/commands/kiro/spec-requirements.ja.md
-.claude/commands/kiro/spec-status.ja.md
-.claude/commands/kiro/spec-tasks.ja.md
-.claude/commands/kiro/steering.ja.md
-.claude/commands/kiro/steering-custom.ja.md
-.claude/commands/kiro/validate-design.ja.md
-.claude/commands/kiro/validate-gap.ja.md
-.claude/commands/kiro/validate-impl.ja.md
+tmp/cc-sdd/.claude/commands/kiro/spec-design.ja.md
+tmp/cc-sdd/.claude/commands/kiro/spec-impl.ja.md
+tmp/cc-sdd/.claude/commands/kiro/spec-init.ja.md
+tmp/cc-sdd/.claude/commands/kiro/spec-quick.ja.md
+tmp/cc-sdd/.claude/commands/kiro/spec-requirements.ja.md
+tmp/cc-sdd/.claude/commands/kiro/spec-status.ja.md
+tmp/cc-sdd/.claude/commands/kiro/spec-tasks.ja.md
+tmp/cc-sdd/.claude/commands/kiro/steering.ja.md
+tmp/cc-sdd/.claude/commands/kiro/steering-custom.ja.md
+tmp/cc-sdd/.claude/commands/kiro/validate-design.ja.md
+tmp/cc-sdd/.claude/commands/kiro/validate-gap.ja.md
+tmp/cc-sdd/.claude/commands/kiro/validate-impl.ja.md
 ```
 
 ### 2. Codex プロンプトファイル（11個）
@@ -84,16 +92,18 @@
 ```
 
 #### 日本語訳版（9個）
+**状態**: ✓ 2026-01-05 に `tmp/cc-sdd/` に移動済み
+
 ```
-.kiro/settings/rules/design-discovery-full.ja.md
-.kiro/settings/rules/design-discovery-light.ja.md
-.kiro/settings/rules/design-principles.ja.md
-.kiro/settings/rules/design-review.ja.md
-.kiro/settings/rules/ears-format.ja.md
-.kiro/settings/rules/gap-analysis.ja.md
-.kiro/settings/rules/steering-principles.ja.md
-.kiro/settings/rules/tasks-generation.ja.md
-.kiro/settings/rules/tasks-parallel-analysis.ja.md
+tmp/cc-sdd/.kiro/settings/rules/design-discovery-full.ja.md
+tmp/cc-sdd/.kiro/settings/rules/design-discovery-light.ja.md
+tmp/cc-sdd/.kiro/settings/rules/design-principles.ja.md
+tmp/cc-sdd/.kiro/settings/rules/design-review.ja.md
+tmp/cc-sdd/.kiro/settings/rules/ears-format.ja.md
+tmp/cc-sdd/.kiro/settings/rules/gap-analysis.ja.md
+tmp/cc-sdd/.kiro/settings/rules/steering-principles.ja.md
+tmp/cc-sdd/.kiro/settings/rules/tasks-generation.ja.md
+tmp/cc-sdd/.kiro/settings/rules/tasks-parallel-analysis.ja.md
 ```
 
 ### 4. Spec テンプレートファイル（11個）
@@ -111,12 +121,14 @@
 ```
 
 #### 日本語訳版（5個）
+**状態**: ✓ 2026-01-05 に `tmp/cc-sdd/` に移動済み
+
 ```
-.kiro/settings/templates/specs/design.ja.md
-.kiro/settings/templates/specs/requirements.ja.md
-.kiro/settings/templates/specs/requirements-init.ja.md
-.kiro/settings/templates/specs/research.ja.md
-.kiro/settings/templates/specs/tasks.ja.md
+tmp/cc-sdd/.kiro/settings/templates/specs/design.ja.md
+tmp/cc-sdd/.kiro/settings/templates/specs/requirements.ja.md
+tmp/cc-sdd/.kiro/settings/templates/specs/requirements-init.ja.md
+tmp/cc-sdd/.kiro/settings/templates/specs/research.ja.md
+tmp/cc-sdd/.kiro/settings/templates/specs/tasks.ja.md
 ```
 
 ### 5. Steering テンプレートファイル（6個）
@@ -131,10 +143,12 @@
 ```
 
 #### 日本語訳版（3個）
+**状態**: ✓ 2026-01-05 に `tmp/cc-sdd/` に移動済み
+
 ```
-.kiro/settings/templates/steering/product.ja.md
-.kiro/settings/templates/steering/structure.ja.md
-.kiro/settings/templates/steering/tech.ja.md
+tmp/cc-sdd/.kiro/settings/templates/steering/product.ja.md
+tmp/cc-sdd/.kiro/settings/templates/steering/structure.ja.md
+tmp/cc-sdd/.kiro/settings/templates/steering/tech.ja.md
 ```
 
 ### 6. Steering Custom テンプレートファイル（14個）
@@ -153,46 +167,49 @@
 ```
 
 #### 日本語訳版（7個）
+**状態**: ✓ 2026-01-05 に `tmp/cc-sdd/` に移動済み
+
 ```
-.kiro/settings/templates/steering-custom/api-standards.ja.md
-.kiro/settings/templates/steering-custom/authentication.ja.md
-.kiro/settings/templates/steering-custom/database.ja.md
-.kiro/settings/templates/steering-custom/deployment.ja.md
-.kiro/settings/templates/steering-custom/error-handling.ja.md
-.kiro/settings/templates/steering-custom/security.ja.md
-.kiro/settings/templates/steering-custom/testing.ja.md
+tmp/cc-sdd/.kiro/settings/templates/steering-custom/api-standards.ja.md
+tmp/cc-sdd/.kiro/settings/templates/steering-custom/authentication.ja.md
+tmp/cc-sdd/.kiro/settings/templates/steering-custom/database.ja.md
+tmp/cc-sdd/.kiro/settings/templates/steering-custom/deployment.ja.md
+tmp/cc-sdd/.kiro/settings/templates/steering-custom/error-handling.ja.md
+tmp/cc-sdd/.kiro/settings/templates/steering-custom/security.ja.md
+tmp/cc-sdd/.kiro/settings/templates/steering-custom/testing.ja.md
 ```
 
 ---
 
-## コピー用リスト（全84ファイル）
+## コピー用リスト
 
-### 全ファイルパス
+**注記**：日本語訳版（.ja.md）ファイル36個は、2026-01-05 に `tmp/cc-sdd/` に移動済みです。残りの48個のファイルのみ、外部リポジトリへのコピーが必要です。
+
+### 移動済みファイル（36個）
+
+`.ja.md` ファイルは以下の場所に既に移動されています：
+```
+tmp/cc-sdd/.claude/commands/kiro/            # 12ファイル
+tmp/cc-sdd/.kiro/settings/rules/             # 9ファイル
+tmp/cc-sdd/.kiro/settings/templates/specs/   # 5ファイル
+tmp/cc-sdd/.kiro/settings/templates/steering/ # 3ファイル
+tmp/cc-sdd/.kiro/settings/templates/steering-custom/ # 7ファイル
+```
+
+### コピー対象ファイル（48個：英語版と Codex プロンプト）
 ```
 .claude/commands/kiro/spec-design.md
-.claude/commands/kiro/spec-design.ja.md
 .claude/commands/kiro/spec-impl.md
-.claude/commands/kiro/spec-impl.ja.md
 .claude/commands/kiro/spec-init.md
-.claude/commands/kiro/spec-init.ja.md
 .claude/commands/kiro/spec-quick.md
-.claude/commands/kiro/spec-quick.ja.md
 .claude/commands/kiro/spec-requirements.md
-.claude/commands/kiro/spec-requirements.ja.md
 .claude/commands/kiro/spec-status.md
-.claude/commands/kiro/spec-status.ja.md
 .claude/commands/kiro/spec-tasks.md
-.claude/commands/kiro/spec-tasks.ja.md
 .claude/commands/kiro/steering.md
-.claude/commands/kiro/steering.ja.md
 .claude/commands/kiro/steering-custom.md
-.claude/commands/kiro/steering-custom.ja.md
 .claude/commands/kiro/validate-design.md
-.claude/commands/kiro/validate-design.ja.md
 .claude/commands/kiro/validate-gap.md
-.claude/commands/kiro/validate-gap.ja.md
 .claude/commands/kiro/validate-impl.md
-.claude/commands/kiro/validate-impl.ja.md
 .codex/prompts/kiro-spec-design.md
 .codex/prompts/kiro-spec-impl.md
 .codex/prompts/kiro-spec-init.md
@@ -205,59 +222,65 @@
 .codex/prompts/kiro-validate-gap.md
 .codex/prompts/kiro-validate-impl.md
 .kiro/settings/rules/design-discovery-full.md
-.kiro/settings/rules/design-discovery-full.ja.md
 .kiro/settings/rules/design-discovery-light.md
-.kiro/settings/rules/design-discovery-light.ja.md
 .kiro/settings/rules/design-principles.md
-.kiro/settings/rules/design-principles.ja.md
 .kiro/settings/rules/design-review.md
-.kiro/settings/rules/design-review.ja.md
 .kiro/settings/rules/ears-format.md
-.kiro/settings/rules/ears-format.ja.md
 .kiro/settings/rules/gap-analysis.md
-.kiro/settings/rules/gap-analysis.ja.md
 .kiro/settings/rules/steering-principles.md
-.kiro/settings/rules/steering-principles.ja.md
 .kiro/settings/rules/tasks-generation.md
-.kiro/settings/rules/tasks-generation.ja.md
 .kiro/settings/rules/tasks-parallel-analysis.md
-.kiro/settings/rules/tasks-parallel-analysis.ja.md
 .kiro/settings/templates/specs/design.md
-.kiro/settings/templates/specs/design.ja.md
 .kiro/settings/templates/specs/init.json
 .kiro/settings/templates/specs/requirements.md
-.kiro/settings/templates/specs/requirements.ja.md
 .kiro/settings/templates/specs/requirements-init.md
-.kiro/settings/templates/specs/requirements-init.ja.md
 .kiro/settings/templates/specs/research.md
-.kiro/settings/templates/specs/research.ja.md
 .kiro/settings/templates/specs/tasks.md
-.kiro/settings/templates/specs/tasks.ja.md
 .kiro/settings/templates/steering/product.md
-.kiro/settings/templates/steering/product.ja.md
 .kiro/settings/templates/steering/structure.md
-.kiro/settings/templates/steering/structure.ja.md
 .kiro/settings/templates/steering/tech.md
-.kiro/settings/templates/steering/tech.ja.md
 .kiro/settings/templates/steering-custom/api-standards.md
-.kiro/settings/templates/steering-custom/api-standards.ja.md
 .kiro/settings/templates/steering-custom/authentication.md
-.kiro/settings/templates/steering-custom/authentication.ja.md
 .kiro/settings/templates/steering-custom/database.md
-.kiro/settings/templates/steering-custom/database.ja.md
 .kiro/settings/templates/steering-custom/deployment.md
-.kiro/settings/templates/steering-custom/deployment.ja.md
 .kiro/settings/templates/steering-custom/error-handling.md
-.kiro/settings/templates/steering-custom/error-handling.ja.md
 .kiro/settings/templates/steering-custom/security.md
-.kiro/settings/templates/steering-custom/security.ja.md
 .kiro/settings/templates/steering-custom/testing.md
-.kiro/settings/templates/steering-custom/testing.ja.md
 ```
 
 ---
 
+## 実際の移動作業記録
+
+### 日本語訳版ファイル（.ja.md）の移動
+
+**実行日時**: 2026-01-05
+
+36個の日本語訳版ファイル（`.ja.md`）を `tmp/cc-sdd/` に移動しました。以下の構造で移動済みです：
+
+```bash
+# 実行したスクリプト（概要）
+for file in "${files[@]}"; do
+  dest_dir="tmp/cc-sdd/$(dirname "$file")"
+  mkdir -p "$dest_dir"
+  mv "$file" "tmp/cc-sdd/$file"
+done
+```
+
+**移動されたファイル一覧**:
+- `.claude/commands/kiro/`: 12個
+- `.kiro/settings/rules/`: 9個
+- `.kiro/settings/templates/specs/`: 5個
+- `.kiro/settings/templates/steering/`: 3個
+- `.kiro/settings/templates/steering-custom/`: 7個
+
+**総計**: 36ファイル
+
+---
+
 ## 移動作業のヒント
+
+**注記**: 日本語訳版ファイルは既に `tmp/cc-sdd/` に移動済みです。以下のコマンド例では、残りの英語版とCodexプロンプトファイル（48個）のみを外部リポジトリにコピーする場合を想定しています。
 
 ### Git を使用した移動コマンド例
 
@@ -267,22 +290,24 @@ cd /path/to/plugin-repo
 
 # ディレクトリ構造を作成
 mkdir -p .claude/commands/kiro
+mkdir -p .codex/prompts
 mkdir -p .kiro/settings/rules
 mkdir -p .kiro/settings/templates/specs
 mkdir -p .kiro/settings/templates/steering
 mkdir -p .kiro/settings/templates/steering-custom
 
-# ファイルをコピー
-rsync -av /workspaces/niro-mcp-servers/.claude/commands/kiro/ .claude/commands/kiro/
-rsync -av /workspaces/niro-mcp-servers/.kiro/settings/ .kiro/settings/
+# 英語版ファイルをコピー（.ja.md を除外）
+rsync -av --exclude '*.ja.md' /workspaces/niro-mcp-servers/.claude/commands/kiro/ .claude/commands/kiro/
+rsync -av /workspaces/niro-mcp-servers/.codex/prompts/ .codex/prompts/
+rsync -av --exclude '*.ja.md' /workspaces/niro-mcp-servers/.kiro/settings/ .kiro/settings/
 
 # Git に追加
-git add .claude/commands/kiro .kiro/settings
-git commit -m "Add cc-sdd configuration files from niro-mcp-servers"
+git add .claude/commands/kiro .codex/prompts .kiro/settings
+git commit -m "Add cc-sdd configuration files from niro-mcp-servers (English version and Codex prompts)"
 
 # 元のリポジトリから削除（確認後）
 cd /workspaces/niro-mcp-servers
-git rm -r .claude/commands/kiro .kiro/settings
+git rm -r --cached .claude/commands/kiro .codex/prompts .kiro/settings
 git commit -m "Move cc-sdd files to plugin repository"
 ```
 
@@ -316,8 +341,12 @@ AIコーディングアシスタント向けのSpec-Driven Development (SDD) ワ
 
 **本プロジェクトの実装状況**:
 - Claude Code版コマンドファイル（24ファイル）✓ 実装済み
+  - 日本語訳版（12ファイル）→ `tmp/cc-sdd/` に移動済み（2026-01-05）
 - Codex CLI版プロンプトファイル（11ファイル）✓ 2026-01-05 追加
 - ルール、テンプレートファイル（49ファイル）✓ 実装済み
+  - 日本語訳版（24ファイル）→ `tmp/cc-sdd/` に移動済み（2026-01-05）
+
+**合計移動済み**: 36個の日本語訳版ファイルが `tmp/cc-sdd/` に整理されました
 
 **ワークフロー機能**:
 - 要件（Requirements）→ 設計（Design）→ タスク（Tasks）→ 実装（Implementation）の構造化されたワークフローを実現
