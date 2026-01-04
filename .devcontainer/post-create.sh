@@ -6,6 +6,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # プロジェクトルートを取得（SCRIPT_DIRの親ディレクトリ）
 PROJECT_ROOT="$(dirname "${SCRIPT_DIR}")"
 
+# Fix ownership of mounted directories
+# マウントされたディレクトリはホストのUID/GIDで作成されるため、
+# コンテナ内ユーザーに所有権を変更する必要がある
+echo "Fixing ownership of mounted directories..."
+sudo chown -R $(id -u):$(id -g) ~/.claude ~/.codex 2>/dev/null || true
+
 # Update system packages
 sudo apt-get update
 sudo apt-get install -y vim tree jq unzip
@@ -50,12 +56,4 @@ sleep 2
 if ! git config --global --get credential.helper &> /dev/null; then
     echo "Configuring git credential helper..."
     git config --global credential.helper store 2> /dev/null || true
-fi
-
-# Setup Claude Code statusline (team-shared configuration)
-if [ -f "${SCRIPT_DIR}/statusline-command.sh" ]; then
-    echo "Setting up Claude Code statusline..."
-    mkdir -p "${PROJECT_ROOT}/.claude"
-    cp "${SCRIPT_DIR}/statusline-command.sh" "${PROJECT_ROOT}/.claude/statusline-command.sh"
-    chmod +x "${PROJECT_ROOT}/.claude/statusline-command.sh"
 fi

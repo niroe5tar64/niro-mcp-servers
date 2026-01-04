@@ -54,10 +54,14 @@
   "remoteEnv": {
     "PATH": "/home/dev-user/.local/bin:/home/dev-user/.bun/bin:${containerEnv:PATH}"
   },
+  "initializeCommand": "test -f packages/confluence-content/.env || cp packages/confluence-content/.env.template packages/confluence-content/.env",
   "mounts": [
     "source=${localEnv:HOME}/.gitconfig,target=/home/dev-user/.gitconfig,type=bind,consistency=cached",
     "source=${localEnv:HOME}/.ssh,target=/home/dev-user/.ssh,type=bind,consistency=cached,readonly",
-    "source=${localEnv:HOME}/.claude,target=/home/dev-user/.claude,type=bind",
+    "source=${localEnv:HOME}/.claude/rules,target=/home/dev-user/.claude/rules,type=bind",
+    "source=${localEnv:HOME}/.claude/ide,target=/home/dev-user/.claude/ide,type=bind",
+    "source=${localEnv:HOME}/.claude/plans,target=/home/dev-user/.claude/plans,type=bind",
+    "source=${localEnv:HOME}/.claude/todos,target=/home/dev-user/.claude/todos,type=bind",
     "source=${localEnv:HOME}/.codex,target=/home/dev-user/.codex,type=bind"
   ],
   "postCreateCommand": "bash .devcontainer/post-create.sh && bun install",
@@ -65,6 +69,5 @@
   "name": "Niro MCP Servers Dev Environment",
   "forwardPorts": [
     50301
-  ],
-  "initializeCommand": "test -f packages/confluence-content/.env || cp packages/confluence-content/.env.template packages/confluence-content/.env"
+  ]
 }
