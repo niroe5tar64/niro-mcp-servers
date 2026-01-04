@@ -42,7 +42,9 @@ bun.lockb
 .claude/settings.local.json
 
 # Codex (local state)
-.codex/
+.codex/*
+!.codex/prompts/
+!.codex/prompts/**
 !.codex/skills/
 !.codex/skills/**
 .codex/skills/.system/
