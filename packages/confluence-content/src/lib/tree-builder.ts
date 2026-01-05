@@ -4,7 +4,7 @@
  * CQL検索結果からページツリーを構築します。
  */
 
-import type { Ancestor, SearchResult } from "./confluence-api.ts";
+import type { SearchResult } from "./confluence-api.ts";
 
 /**
  * ページツリーのノード

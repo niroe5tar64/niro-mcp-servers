@@ -1,4 +1,4 @@
-export { removeConfluenceMetadata } from "./metadata-cleaner";
 export { processRenderedHtml } from "./macro-processor";
-export { normalizeTableCells } from "./table-normalizer";
+export { removeConfluenceMetadata } from "./metadata-cleaner";
 export { processSvgToMermaid } from "./svg-to-mermaid";
+export { normalizeTableCells } from "./table-normalizer";
