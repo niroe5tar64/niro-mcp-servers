@@ -1,16 +1,32 @@
 {
   "name": "@niro-mcp/confluence-cleaner",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "description": "Confluence HTML cleaner shared library",
   "type": "module",
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   },
+  "files": ["dist", "README.md"],
   "scripts": {
+    "build": "tsc",
     "test": "bun test",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "bun run clean && bun run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/niroe5tar64/niro-mcp-servers.git",
+    "directory": "packages/shared/confluence-cleaner"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
   },
   "devDependencies": {
     "@types/bun": "^1.3.5",

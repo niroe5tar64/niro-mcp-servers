@@ -28,6 +28,24 @@ niro-mcp-servers/
 └── Dockerfile                       # マルチステージビルド
 ```
 
+## 共有ライブラリ
+
+### @niro-mcp/confluence-cleaner
+
+Confluence HTML を LLM 最適化された Markdown に変換する共有ライブラリ。
+GitHub Packages (Private) として公開されており、他リポジトリからも利用可能。
+
+**主な機能**:
+- HTMLノイズとメタデータの除去
+- Confluenceマクロの処理
+- レイアウトのクリーンアップ
+- Markdown変換（GFM対応）
+- トークン削減最適化（20-50%削減）
+
+**利用方法**:
+- パッケージ詳細: [packages/shared/confluence-cleaner/README.md](packages/shared/confluence-cleaner/README.md)
+- 他リポジトリからの利用: [docs/USING_GITHUB_PACKAGES.md](docs/USING_GITHUB_PACKAGES.md)
+
 ## MCP サーバー一覧
 
 ### Confluence-Content

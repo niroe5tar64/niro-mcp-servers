@@ -4,6 +4,29 @@ Confluence HTML cleaner shared library for MCP servers.
 
 Converts **rendered Confluence HTML** (browser-displayed HTML) to clean Markdown optimized for LLM consumption.
 
+## Installation
+
+This package is published to GitHub Packages (private registry).
+
+### 1. Configure GitHub Packages
+
+Create or edit `.npmrc` in your project root:
+
+```ini
+@niro-mcp:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
+```
+
+Replace `YOUR_GITHUB_TOKEN` with a GitHub Personal Access Token (PAT) with `read:packages` permission.
+
+### 2. Install the package
+
+```bash
+bun add @niro-mcp/confluence-cleaner
+# or
+npm install @niro-mcp/confluence-cleaner
+```
+
 ## Features
 
 - **Remove HTML noise and metadata**: Strips class, style, data-* attributes
@@ -59,11 +82,31 @@ interface CleanerOptions {
 # Run tests
 bun test
 
+# Build package
+bun run build
+
 # Check code quality
 bunx biome check .
 
 # Clean build artifacts
 bun run clean
+```
+
+## Publishing
+
+This package is automatically published to GitHub Packages when a version tag is pushed.
+
+```bash
+# 1. Update version in package.json
+# 2. Commit changes
+git add packages/shared/confluence-cleaner/package.json
+git commit -m "chore: bump confluence-cleaner to v0.1.1"
+
+# 3. Create and push tag
+git tag confluence-cleaner-v0.1.1
+git push origin main --tags
+
+# GitHub Actions will automatically build and publish
 ```
 
 ## Implementation Notes

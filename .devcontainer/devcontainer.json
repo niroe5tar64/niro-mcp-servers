@@ -67,7 +67,5 @@
   "postCreateCommand": "bash .devcontainer/post-create.sh && bun install",
   "remoteUser": "dev-user",
   "name": "Niro MCP Servers Dev Environment",
-  "forwardPorts": [
-    50301
-  ]
+  "forwardPorts": [50301]
 }
