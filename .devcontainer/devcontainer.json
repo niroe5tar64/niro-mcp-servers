@@ -54,7 +54,7 @@
   "remoteEnv": {
     "PATH": "/home/dev-user/.local/bin:/home/dev-user/.bun/bin:${containerEnv:PATH}"
   },
-  "initializeCommand": "test -f packages/confluence-content/.env || cp packages/confluence-content/.env.template packages/confluence-content/.env",
+  "initializeCommand": "bash .devcontainer/initialize.sh && (test -f packages/confluence-content/.env || cp packages/confluence-content/.env.template packages/confluence-content/.env)",
   "mounts": [
     "source=${localEnv:HOME}/.gitconfig,target=/home/dev-user/.gitconfig,type=bind,consistency=cached",
     "source=${localEnv:HOME}/.ssh,target=/home/dev-user/.ssh,type=bind,consistency=cached,readonly",

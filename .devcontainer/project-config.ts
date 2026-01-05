@@ -34,7 +34,7 @@ export const projectConfig: DevContainerConfig = {
 
   // initializeCommand（.envテンプレートのコピー）
   initializeCommand:
-    "test -f packages/confluence-content/.env || cp packages/confluence-content/.env.template packages/confluence-content/.env",
+    "bash .devcontainer/initialize.sh && (test -f packages/confluence-content/.env || cp packages/confluence-content/.env.template packages/confluence-content/.env)",
 
   // postCreateCommand（bun installを追加）
   // 注: post-create.shが既に実行されているため、その後にbun installを実行
